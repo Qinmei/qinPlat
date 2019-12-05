@@ -6,7 +6,7 @@ import { CatsModule } from './cats/cats.module';
   imports: [
     TypeOrmModule.forRoot({
       type: 'sqlite',
-      database: './common/database/db.sql',
+      database: './src/common/database/db.sql',
       entities: ['dist/**/*.entity{.ts,.js}'],
       synchronize: true,
     }),
