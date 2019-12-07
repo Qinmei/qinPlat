@@ -1,7 +1,7 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
-export class Cat {
+export class Setting {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -9,11 +9,5 @@ export class Cat {
   name: string;
 
   @Column()
-  description: string;
-
-  @Column()
-  filename: string;
-
-  @Column()
-  isPublished: boolean;
+  password: string;
 }
