@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Body } from '@nestjs/common';
 import { SettingsService } from './settings.service';
 import { CreateDto } from './dto/create.dto';
-import { ForbiddenException } from '../../exceptions/forbidden.exception';
+import { BusinessException, ErrorCode } from '../../exceptions';
 
 @Controller('settings')
 export class SettingsController {
@@ -9,7 +9,7 @@ export class SettingsController {
 
   @Get()
   async find() {
-    throw new ForbiddenException();
+    throw new BusinessException(ErrorCode.NameError);
 
     return await this.settingsService.find();
   }
