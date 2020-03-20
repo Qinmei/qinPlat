@@ -1,29 +1,12 @@
 import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
-import { APP_FILTER } from '@nestjs/core';
-import { SettingsModule, AuthModule, DatabaseModule } from './modules';
+import { AllModules } from './modules';
 import { LoggerMiddleware } from './middlewares';
-import {
-  GlobalExceptionsFilter,
-  HttpExceptionFilter,
-  BusinessExceptionFilter,
-} from './filters';
+import { AllFilters } from './filters';
+import { AllInterceptors } from './interceptors';
 
 @Module({
-  imports: [DatabaseModule, SettingsModule, AuthModule],
-  providers: [
-    {
-      provide: APP_FILTER,
-      useClass: GlobalExceptionsFilter,
-    },
-    {
-      provide: APP_FILTER,
-      useClass: HttpExceptionFilter,
-    },
-    {
-      provide: APP_FILTER,
-      useClass: BusinessExceptionFilter,
-    },
-  ],
+  imports: AllModules,
+  providers: [...AllFilters, ...AllInterceptors],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
