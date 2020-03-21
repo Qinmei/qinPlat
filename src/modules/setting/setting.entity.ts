@@ -15,11 +15,9 @@ export class Setting {
   @Column()
   name: string;
 
-  @Exclude()
   @Column()
-  username: boolean;
+  username: string;
 
-  @Exclude()
   @Column()
   password: string;
 

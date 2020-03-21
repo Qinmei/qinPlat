@@ -2,13 +2,31 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Setting } from './setting.entity';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class SettingService {
   constructor(
     @InjectRepository(Setting)
     private readonly settingRepository: Repository<Setting>,
+    private readonly jwtService: JwtService,
   ) {}
+
+  async validateUser(user: Partial<Setting>): Promise<undefined | Setting> {
+    const result = await this.settingRepository.findOne(user);
+    return result;
+  }
+
+  async validateToken(token: string): Promise<any> {
+    return this.jwtService.verify(token);
+  }
+
+  async generateToken(user: Partial<Setting>) {
+    const payload = { name: user.username };
+    return {
+      access_token: this.jwtService.sign(payload),
+    };
+  }
 
   async find(): Promise<Setting | undefined> {
     return await this.settingRepository.findOne();

@@ -5,7 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
   imports: [
     TypeOrmModule.forRoot({
       type: 'sqlite',
-      database: './src/modules/database/sqlite/db.sql',
+      database: './src/modules/basis/sqlite/db.sql',
       entities: ['dist/**/*.entity{.ts,.js}'],
       synchronize: true,
     }),

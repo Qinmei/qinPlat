@@ -1,5 +1,4 @@
-export interface Setting {
-  readonly name: string;
-  readonly age: number;
-  readonly breed: string;
+export interface User {
+  readonly username: string;
+  readonly password: string;
 }
