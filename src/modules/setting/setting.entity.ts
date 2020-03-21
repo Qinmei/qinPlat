@@ -17,7 +17,7 @@ export class Setting {
 
   @Exclude()
   @Column()
-  username: string;
+  username: boolean;
 
   @Exclude()
   @Column()
