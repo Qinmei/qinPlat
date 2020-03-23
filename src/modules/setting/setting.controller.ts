@@ -31,6 +31,10 @@ export class SettingController {
   @Post()
   @UsePipes(ValidationPipe)
   async create(@Body() createSettingDto: CreateDto) {
+    const result = await this.settingService.find();
+    if (result) {
+      return await this.settingService.update(result.id, createSettingDto);
+    }
     return await this.settingService.create(createSettingDto);
   }
 }

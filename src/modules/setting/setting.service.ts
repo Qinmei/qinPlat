@@ -17,8 +17,13 @@ export class SettingService {
     return result;
   }
 
-  async validateToken(token: string): Promise<any> {
-    return this.jwtService.verify(token);
+  async validateToken(token: string): Promise<boolean> {
+    const data = this.jwtService.verify(token);
+    const setting = await this.find();
+    if (setting && setting.name === data.name) {
+      return true;
+    }
+    return false;
   }
 
   async generateToken(user: Partial<Setting>) {
@@ -36,9 +41,8 @@ export class SettingService {
     return await this.settingRepository.save(data);
   }
 
-  async update(data: Partial<Setting>): Promise<any | undefined> {
-    const result = await this.find();
-    return await this.settingRepository.update(result.id, data);
+  async update(id: number, data: Partial<Setting>): Promise<any | undefined> {
+    return await this.settingRepository.update(id, data);
   }
 
   async clear(): Promise<any | undefined> {
