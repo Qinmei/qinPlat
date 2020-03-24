@@ -19,9 +19,4 @@ const AllFilters = [
   },
 ];
 
-export {
-  BusinessExceptionFilter,
-  HttpExceptionFilter,
-  GlobalExceptionsFilter,
-  AllFilters,
-};
+export { AllFilters };

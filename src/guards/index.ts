@@ -13,4 +13,4 @@ const AllGuards = [
   },
 ];
 
-export { AuthGuard, RolesGuard, AllGuards };
+export { AllGuards };
