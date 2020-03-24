@@ -22,6 +22,8 @@ export class GlobalExceptionsFilter implements ExceptionFilter {
         ? exception.message.message
         : 'Unknown Error';
 
+    console.log(exception);
+
     response.status(status).json({
       errorCode: status,
       message,
