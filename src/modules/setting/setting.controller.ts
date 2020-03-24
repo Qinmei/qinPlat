@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, UsePipes, Render } from '@nestjs/common';
+import { Controller, Get, Post, Body, UsePipes } from '@nestjs/common';
 import { SettingService } from './setting.service';
 import { CreateDto, LoginDto } from './dto';
 import { ValidationPipe } from '../../pipes';
@@ -9,9 +9,8 @@ import { BusinessException, ErrorCode } from '../../exceptions';
 export class SettingController {
   constructor(private readonly settingService: SettingService) {}
 
-  @Get('login')
+  @Post('login')
   @NoAuth(true)
-  @Render('Index')
   @UsePipes(ValidationPipe)
   async login(@Body() loginData: LoginDto) {
     const userInfo = await this.settingService.validateUser(loginData);
@@ -20,8 +19,8 @@ export class SettingController {
       throw new BusinessException(ErrorCode.PassError);
     }
 
-    const token = await this.settingService.generateToken(userInfo);
-    return token;
+    const token = await this.settingService.generateToken();
+    return { token };
   }
 
   @Get()

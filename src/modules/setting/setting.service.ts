@@ -3,10 +3,11 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Setting } from './setting.entity';
 import { JwtService } from '@nestjs/jwt';
+import { v4 as uuidv4 } from 'uuid';
+import { Config } from '../../config';
 
 @Injectable()
 export class SettingService {
-  private cache: Setting | null = null;
   constructor(
     @InjectRepository(Setting)
     private readonly settingRepository: Repository<Setting>,
@@ -19,30 +20,35 @@ export class SettingService {
   }
 
   async validateToken(token: string): Promise<boolean> {
-    const data = this.jwtService.verify(token);
+    const nowTime = new Date().getTime();
     const setting = await this.find();
-    if (setting && setting.username === data.name) {
-      return true;
-    }
-    return false;
+    return setting && setting.token === token && setting.expired > nowTime;
   }
 
-  async generateToken(user: Partial<Setting>) {
-    const payload = { name: user.username };
-    return {
-      access_token: this.jwtService.sign(payload),
-    };
+  async generateToken(): Promise<string> {
+    const nowTime = new Date().getTime();
+    const token = uuidv4();
+    const setting = await this.find();
+
+    await this.update(setting.id, {
+      expired: nowTime + Config.tokenExpired,
+      token,
+    });
+
+    return token;
+  }
+
+  async refreshToken() {
+    const nowTime = new Date().getTime();
+    const setting = await this.find();
+
+    await this.update(setting.id, {
+      expired: nowTime + Config.tokenExpired,
+    });
   }
 
   async find(): Promise<Setting | undefined> {
-    const data = await this.settingRepository.findOne();
-    if (!this.cache) {
-      console.log('noCache');
-      this.cache = data;
-    } else {
-      console.log('cache', this.cache);
-    }
-    return data;
+    return await this.settingRepository.findOne();
   }
 
   async create(data: Partial<Setting>): Promise<any | undefined> {

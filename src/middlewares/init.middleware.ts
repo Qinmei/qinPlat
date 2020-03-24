@@ -1,19 +1,21 @@
 import { Injectable, NestMiddleware } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { SettingService } from '../modules/setting/setting.service';
+import { Config } from '../config';
 
 @Injectable()
-export class UserMiddleware implements NestMiddleware {
+export class InitMiddleware implements NestMiddleware {
   constructor(private readonly settingService: SettingService) {}
 
   async use(req: Request, res: Response, next: () => void) {
-    const token = req.headers.authorization;
-    if (token) {
-      const user = await this.settingService.validateToken(token);
-      if (user) {
-        this.settingService.refreshToken();
-      }
-      req.user = user;
+    const result = await this.settingService.find();
+
+    if (!result) {
+      await this.settingService.create({
+        name: Config.defaultName,
+        username: Config.defaultUserName,
+        password: Config.defaultPassword,
+      });
     }
 
     next();

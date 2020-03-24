@@ -4595,8 +4595,8 @@ node-notifier@^5.4.2:
 
 node-pre-gyp@^0.11.0:
   version "0.11.0"
-  resolved "https://registry.npm.taobao.org/node-pre-gyp/download/node-pre-gyp-0.11.0.tgz#db1f33215272f692cd38f03238e3e9b47c5dd054"
-  integrity sha1-2x8zIVJy9pLNOPAyOOPptHxd0FQ=
+  resolved "https://registry.yarnpkg.com/node-pre-gyp/-/node-pre-gyp-0.11.0.tgz#db1f33215272f692cd38f03238e3e9b47c5dd054"
+  integrity sha512-TwWAOZb0j7e9eGaf9esRx3ZcLaE5tQ2lvYy1pb5IAaG1a2e2Kv5Lms1Y4hpj+ciXJRofIxxlt5haeQ/2ANeE0Q==
   dependencies:
     detect-libc "^1.0.2"
     mkdirp "^0.5.1"
@@ -5786,8 +5786,8 @@ sprintf-js@~1.0.2:
 
 sqlite3@^4.1.1:
   version "4.1.1"
-  resolved "https://registry.npm.taobao.org/sqlite3/download/sqlite3-4.1.1.tgz?cache=0&sync_timestamp=1575514019129&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2Fsqlite3%2Fdownload%2Fsqlite3-4.1.1.tgz#539a42e476640796578e22d589b3283c28055242"
-  integrity sha1-U5pC5HZkB5ZXjiLVibMoPCgFUkI=
+  resolved "https://registry.yarnpkg.com/sqlite3/-/sqlite3-4.1.1.tgz#539a42e476640796578e22d589b3283c28055242"
+  integrity sha512-CvT5XY+MWnn0HkbwVKJAyWEMfzpAPwnTiB3TobA5Mri44SrTovmmh499NPQP+gatkeOipqPlBLel7rn4E/PCQg==
   dependencies:
     nan "^2.12.1"
     node-pre-gyp "^0.11.0"
@@ -6553,6 +6553,11 @@ uuid@3.3.3, uuid@^3.3.2:
   version "3.3.3"
   resolved "https://registry.npm.taobao.org/uuid/download/uuid-3.3.3.tgz?cache=0&sync_timestamp=1566221202613&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2Fuuid%2Fdownload%2Fuuid-3.3.3.tgz#4568f0216e78760ee1dbf3a4d2cf53e224112866"
   integrity sha1-RWjwIW54dg7h2/Ok0s9T4iQRKGY=
+
+uuid@^7.0.2:
+  version "7.0.2"
+  resolved "https://registry.yarnpkg.com/uuid/-/uuid-7.0.2.tgz#7ff5c203467e91f5e0d85cfcbaaf7d2ebbca9be6"
+  integrity sha512-vy9V/+pKG+5ZTYKf+VcphF5Oc6EFiu3W8Nv3P3zIh0EqVI80ZxOzuPfe9EHjkFNvf8+xuTHVeei4Drydlx4zjw==
 
 validate-npm-package-license@^3.0.1:
   version "3.0.4"

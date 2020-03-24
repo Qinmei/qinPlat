@@ -22,6 +22,14 @@ export class Setting {
   @Exclude()
   password: string;
 
+  @Column({ nullable: true })
+  @Exclude()
+  token: string;
+
+  @Column({ nullable: true })
+  @Exclude()
+  expired: number;
+
   @UpdateDateColumn()
   updatedAt: number;
 

@@ -1,5 +1,6 @@
 import { UserMiddleware } from './user.middleware';
+import { InitMiddleware } from './init.middleware';
 
-const AllMiddleware = [UserMiddleware];
+const AllMiddleware = [InitMiddleware, UserMiddleware];
 
-export { UserMiddleware, AllMiddleware };
+export { InitMiddleware, UserMiddleware, AllMiddleware };
