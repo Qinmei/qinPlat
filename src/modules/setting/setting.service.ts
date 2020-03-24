@@ -6,6 +6,7 @@ import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class SettingService {
+  private cache: Setting | null = null;
   constructor(
     @InjectRepository(Setting)
     private readonly settingRepository: Repository<Setting>,
@@ -20,7 +21,7 @@ export class SettingService {
   async validateToken(token: string): Promise<boolean> {
     const data = this.jwtService.verify(token);
     const setting = await this.find();
-    if (setting && setting.name === data.name) {
+    if (setting && setting.username === data.name) {
       return true;
     }
     return false;
@@ -34,7 +35,14 @@ export class SettingService {
   }
 
   async find(): Promise<Setting | undefined> {
-    return await this.settingRepository.findOne();
+    const data = await this.settingRepository.findOne();
+    if (!this.cache) {
+      console.log('noCache');
+      this.cache = data;
+    } else {
+      console.log('cache', this.cache);
+    }
+    return data;
   }
 
   async create(data: Partial<Setting>): Promise<any | undefined> {

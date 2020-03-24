@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, UsePipes } from '@nestjs/common';
+import { Controller, Get, Post, Body, UsePipes, Render } from '@nestjs/common';
 import { SettingService } from './setting.service';
 import { CreateDto, LoginDto } from './dto';
 import { ValidationPipe } from '../../pipes';
@@ -9,8 +9,9 @@ import { BusinessException, ErrorCode } from '../../exceptions';
 export class SettingController {
   constructor(private readonly settingService: SettingService) {}
 
-  @Post('login')
+  @Get('login')
   @NoAuth(true)
+  @Render('Index')
   @UsePipes(ValidationPipe)
   async login(@Body() loginData: LoginDto) {
     const userInfo = await this.settingService.validateUser(loginData);

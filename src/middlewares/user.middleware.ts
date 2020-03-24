@@ -11,9 +11,9 @@ export class UserMiddleware implements NestMiddleware {
     if (token) {
       try {
         const user = await this.settingService.validateToken(token);
-        req.user = 'admin';
+        req.user = user;
       } catch (error) {
-        req.user = null;
+        req.user = false;
       }
     }
 

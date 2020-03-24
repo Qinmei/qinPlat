@@ -19,6 +19,7 @@ export class Setting {
   username: string;
 
   @Column()
+  @Exclude()
   password: string;
 
   @UpdateDateColumn()
