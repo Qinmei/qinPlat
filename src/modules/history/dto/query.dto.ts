@@ -1,4 +1,4 @@
-import { IsNumber, IsIn, IsString } from 'class-validator';
+import { IsNumber, IsIn, Max, Min } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class QueryDto {
@@ -8,6 +8,8 @@ export class QueryDto {
 
   @IsNumber()
   @Type(() => Number)
+  @Min(5)
+  @Max(50)
   readonly size: number = 10;
 
   @IsIn(['DESC', 'ASC'])
