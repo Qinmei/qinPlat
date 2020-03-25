@@ -1,14 +1,23 @@
 import {
-  PipeTransform,
   Injectable,
-  ArgumentMetadata,
   BadRequestException,
+  ValidationPipe,
 } from '@nestjs/common';
-import { validate, ValidationError } from 'class-validator';
-import { plainToClass } from 'class-transformer';
+import { ValidationError } from 'class-validator';
 
 @Injectable()
-export class ValidationPipe implements PipeTransform<any> {
+export class CustomValidationPipe extends ValidationPipe {
+  constructor() {
+    super({
+      transform: true,
+      whitelist: true,
+      exceptionFactory: (errors: ValidationError[]) => {
+        const showErrors = this.loopError(errors);
+        return new BadRequestException(showErrors.join(', '));
+      },
+    });
+  }
+
   private loopError(errors: ValidationError[]) {
     const showArr: string[] = [];
     errors.map(item => {
@@ -21,23 +30,5 @@ export class ValidationPipe implements PipeTransform<any> {
     });
 
     return showArr;
-  }
-
-  async transform(value: any, { metatype }: ArgumentMetadata) {
-    if (!metatype || !this.toValidate(metatype)) {
-      return value;
-    }
-    const object = plainToClass(metatype, value);
-    const errors = await validate(object);
-    if (errors.length > 0) {
-      const showErrors = this.loopError(errors);
-      throw new BadRequestException(showErrors.join(', '));
-    }
-    return value;
-  }
-
-  private toValidate(metatype: Function): boolean {
-    const types: Function[] = [String, Boolean, Number, Array, Object];
-    return !types.includes(metatype);
   }
 }

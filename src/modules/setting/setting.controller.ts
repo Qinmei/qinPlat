@@ -1,7 +1,6 @@
-import { Controller, Get, Post, Body, UsePipes } from '@nestjs/common';
+import { Controller, Get, Post, Body } from '@nestjs/common';
 import { SettingService } from './setting.service';
-import { CreateDto, LoginDto } from './dto';
-import { ValidationPipe } from '../../pipes';
+import { UpdateDto, LoginDto } from './dto';
 import { NoAuth } from '../../decorators';
 import { BusinessException, ErrorCode } from '../../exceptions';
 
@@ -11,7 +10,6 @@ export class SettingController {
 
   @Post('login')
   @NoAuth(true)
-  @UsePipes(ValidationPipe)
   async login(@Body() loginData: LoginDto) {
     const userInfo = await this.settingService.validateUser(loginData);
 
@@ -29,12 +27,11 @@ export class SettingController {
   }
 
   @Post()
-  @UsePipes(ValidationPipe)
-  async create(@Body() createSettingDto: CreateDto) {
+  async update(@Body() updateSettingDto: UpdateDto) {
     const result = await this.settingService.find();
     if (result) {
-      return await this.settingService.update(result.id, createSettingDto);
+      return await this.settingService.update(result.id, updateSettingDto);
     }
-    return await this.settingService.create(createSettingDto);
+    return await this.settingService.create(updateSettingDto);
   }
 }

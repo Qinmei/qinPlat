@@ -4,10 +4,11 @@ import { AllMiddleware } from './middlewares';
 import { AllFilters } from './filters';
 import { AllInterceptors } from './interceptors';
 import { AllGuards } from './guards';
+import { AllPipes } from './pipes';
 
 @Module({
   imports: AllModules,
-  providers: [...AllFilters, ...AllInterceptors, ...AllGuards],
+  providers: [...AllFilters, ...AllInterceptors, ...AllGuards, ...AllPipes],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
