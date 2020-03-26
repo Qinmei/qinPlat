@@ -12,7 +12,6 @@ export class InitMiddleware implements NestMiddleware {
 
     if (!result) {
       await this.settingService.create({
-        name: Config.defaultName,
         username: Config.defaultUserName,
         password: Config.defaultPassword,
       });

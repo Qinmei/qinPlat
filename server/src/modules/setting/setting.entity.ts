@@ -13,9 +13,6 @@ export class Setting {
   id: number;
 
   @Column()
-  name: string;
-
-  @Column()
   username: string;
 
   @Column()

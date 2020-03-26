@@ -13,7 +13,7 @@ export class QueryDto {
   readonly size: number = 10;
 
   @IsIn(['DESC', 'ASC'])
-  readonly sortOrder: string = 'ASC';
+  readonly sortOrder: string = 'DESC';
 
   @IsIn(['id', 'createdAt', 'time', 'url'])
   readonly sortBy: string = 'id';
