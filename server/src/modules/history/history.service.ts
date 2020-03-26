@@ -11,14 +11,20 @@ export class HistoryService {
     private readonly historyRepository: Repository<History>,
   ) {}
 
-  async find(query: QueryDto): Promise<History[] | undefined> {
-    return await this.historyRepository.find({
+  async find(
+    query: QueryDto,
+  ): Promise<{ list: History[] | undefined; total: number }> {
+    const [list, total] = await this.historyRepository.findAndCount({
       skip: (query.page - 1) * query.size,
       take: query.size,
       order: {
         [query.sortBy]: query.sortOrder,
       },
     });
+    return {
+      list,
+      total,
+    };
   }
 
   async create(data: Partial<History>): Promise<any | undefined> {

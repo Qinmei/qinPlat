@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import intl from 'react-intl-universal';
 import { Table } from 'antd';
 import { ColumnProps } from 'antd/es/table';
+import { PaginationConfig } from 'antd/es/pagination';
 import styled from 'styled-components';
 import { Api } from '../services';
+import { SorterResult } from 'antd/lib/table/interface';
 
 interface PropType {}
 
@@ -21,35 +23,40 @@ const Wrapper = styled.div``;
 
 const Logs: React.FC<PropType> = props => {
   const [list, setList] = useState<List[]>([]);
-  const [total, setTotal] = useState<number>(100);
+  const [total, setTotal] = useState<number>(0);
   const [page, setPage] = useState<number>(1);
   const [size, setSize] = useState<number>(10);
   const [sort, setSort] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
 
-  const pageChange = (page: number, pageSize?: number | undefined) => {
-    setPage(page);
+  const onTableChange = (
+    pagination: PaginationConfig,
+    filters: Record<string, React.ReactText[] | null>,
+    sorter: SorterResult<List> | SorterResult<List>[],
+  ) => {
+    const { current = 1, pageSize } = pagination;
+    setPage(current);
     pageSize && setSize(pageSize);
+
+    const sortColumn = Array.isArray(sorter) ? sorter[0] : sorter;
+    if (sortColumn?.field === 'time') {
+      setSort(!sort);
+    }
   };
 
   useEffect(() => {
     setLoading(true);
-    const query = sort
-      ? {
-          page,
-          size,
-          sortOrder: 'DESC',
-          sortBy: 'time',
-        }
-      : {
-          page,
-          size,
-        };
     Api.getLogs({
-      query,
+      query: {
+        page,
+        size,
+        sortOrder: sort ? 'DESC' : null,
+        sortBy: sort ? 'time' : null,
+      },
     }).then(res => {
       if (res) {
-        setList(res);
+        setList(res.list);
+        setTotal(res.total);
       }
       setLoading(false);
     });
@@ -96,17 +103,12 @@ const Logs: React.FC<PropType> = props => {
         loading={loading}
         columns={columns}
         dataSource={list}
-        onHeaderRow={column => {
-          return {
-            onClick: () => setSort(!sort),
-          };
-        }}
+        onChange={onTableChange}
         pagination={{
           pageSize: size,
           current: page,
           total: total,
           showTotal: (total: number) => intl.get('common.total', { total }),
-          onChange: pageChange,
         }}
       ></Table>
     </Wrapper>

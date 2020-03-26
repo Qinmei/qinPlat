@@ -5,7 +5,7 @@ import intl from 'react-intl-universal';
 import { CustomConfigProvider } from './contexts/config';
 import * as locales from './locales';
 import NavHeader from './components/Header';
-import { Login, Logs, Setting } from './pages';
+import { Login, Logs, Setting, Files } from './pages';
 import { Auth } from './layouts';
 
 const { Header, Content } = Layout;
@@ -38,6 +38,7 @@ const App: React.FC<{}> = props => {
                   <Route path="/login" component={Login}></Route>
                   <Route path="/setting" component={Setting}></Route>
                   <Route path="/logs" component={Logs}></Route>
+                  <Route path="/files" component={Files}></Route>
                 </Auth>
               </div>
             </Content>

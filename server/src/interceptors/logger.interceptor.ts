@@ -18,15 +18,17 @@ export class LoggerInterceptor implements NestInterceptor {
     return next.handle().pipe(
       tap(() => {
         const req = context.switchToHttp().getRequest<Request>();
-        const reqEndTime = Date.now();
-        const responseTime = reqEndTime - now;
-        this.historyService.create({
-          methods: req.method,
-          url: req.path,
-          userAgent: req.headers['user-agent'],
-          ip: req.ip,
-          time: responseTime,
-        });
+        if (req.path !== '/api/v1/history') {
+          const reqEndTime = Date.now();
+          const responseTime = reqEndTime - now;
+          this.historyService.create({
+            methods: req.method,
+            url: req.path,
+            userAgent: req.headers['user-agent'],
+            ip: req.ip,
+            time: responseTime,
+          });
+        }
       }),
     );
   }

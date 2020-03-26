@@ -14,7 +14,6 @@ const Wrapper = styled.div`
 `;
 
 const Login: React.FC<PropType> = props => {
-  const history = useHistory();
   const layout = {
     labelCol: { span: 4 },
     wrapperCol: { span: 16 },

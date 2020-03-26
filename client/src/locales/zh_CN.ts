@@ -23,4 +23,5 @@ export default {
   'logs.title.createdAt': '创建时间',
   'setting.submit': '修改',
   'setting.submit.success': '设置修改成功, 请重新登录查看',
+  'files.btn.upload': '上传',
 };
