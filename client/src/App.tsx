@@ -4,7 +4,7 @@ import { BrowserRouter, Route } from 'react-router-dom';
 import intl from 'react-intl-universal';
 import { CustomConfigProvider } from './contexts/config';
 import * as locales from './locales';
-import NavHeader from './components/Header';
+import { NavHeader } from './components';
 import { Login, Logs, Setting, Files } from './pages';
 import { Auth } from './layouts';
 

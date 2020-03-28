@@ -3,7 +3,7 @@ import * as path from 'path';
 import { Injectable } from '@nestjs/common';
 import * as rimraf from 'rimraf';
 import { Config } from '../../config';
-import { File, ParamsData, RenameData, RenameDataArr } from './interfaces';
+import { File, ParamsData, RenameData, DirTree } from './interfaces';
 
 @Injectable()
 export class FileService {
@@ -100,5 +100,26 @@ export class FileService {
       await fs.copy(oldFilePath, newFilePath);
     }
     return true;
+  }
+
+  async listAllDir(pathInfo: string = this.basePath): Promise<DirTree[]> {
+    const data = await fs.readdirSync(pathInfo);
+
+    const result: DirTree[] = [];
+    for (const item of data) {
+      const itemPath = path.join(pathInfo, item);
+      const itemInfo = await fs.statSync(itemPath);
+      const isDir = itemInfo.isDirectory();
+      if (isDir) {
+        const children = await this.listAllDir(itemPath);
+        const single: DirTree = {
+          ...itemInfo,
+          name: item,
+          children,
+        };
+        result.push(single);
+      }
+    }
+    return result;
   }
 }

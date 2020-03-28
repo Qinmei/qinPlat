@@ -97,4 +97,13 @@ export class FileController {
       }
     }
   }
+
+  @Get()
+  async listAllDir() {
+    try {
+      return await this.fileService.listAllDir();
+    } catch (error) {
+      throw new BusinessException(ErrorCode.FileListAllDirError);
+    }
+  }
 }

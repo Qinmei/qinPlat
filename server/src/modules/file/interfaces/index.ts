@@ -1,8 +1,8 @@
 import * as fs from 'fs';
 
 export interface File extends fs.Stats {
-  readonly type: string;
-  readonly name: string;
+  type: string;
+  name: string;
 }
 
 export interface ParamsData {
@@ -29,4 +29,9 @@ export interface RenameDataArr {
 export interface CopyOrMove {
   type: 'copy' | 'move';
   files: RenameData[];
+}
+
+export interface DirTree extends fs.Stats {
+  name: string;
+  children?: DirTree[];
 }

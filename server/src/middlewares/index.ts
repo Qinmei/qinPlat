@@ -7,10 +7,10 @@ import { InitMiddleware } from './init.middleware';
 
 const AllMiddleware = [
   helmet(),
-  rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 100,
-  }),
+  // rateLimit({
+  //   windowMs: 15 * 60 * 1000,
+  //   max: 100,
+  // }),
   compression(),
   InitMiddleware,
   UserMiddleware,

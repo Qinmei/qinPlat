@@ -31,4 +31,9 @@ export class ErrorCode {
     code: 20006,
     msg: '文件复制错误',
   };
+
+  static readonly FileListAllDirError: CodeMsg = {
+    code: 20007,
+    msg: '文件目录获取错误',
+  };
 }

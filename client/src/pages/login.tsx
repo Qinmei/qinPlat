@@ -32,7 +32,6 @@ const Login: React.FC<PropType> = props => {
       },
     }).then(res => {
       if (res) {
-        message.success(intl.get('login.submit.success'));
         const { token } = res;
         sessionStorage.setItem('token', token);
         history.push('/images');

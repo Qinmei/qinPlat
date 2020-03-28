@@ -13,6 +13,8 @@ enum HttpUrl {
   login = '/setting/login',
   setting = '/setting',
   logs = '/history',
+  files = '/file',
+  filesWithParams = '/file/:path',
 }
 
 export class Api {
@@ -27,10 +29,6 @@ export class Api {
 
     let link: string = url;
     if (params) {
-      Object.keys(params).map(item => {
-        if (!params[item] && params[item] !== 0) delete params[item];
-      });
-
       link = link.replace(
         /\/:(\w+)/gm,
         index => `/${params[`${index.replace(/\/:/g, '')}`]}`,
@@ -89,5 +87,21 @@ export class Api {
 
   static getLogs(data: any) {
     return this.request(HttpMethods.GET, HttpUrl.logs, data);
+  }
+
+  static getFileList(data: any) {
+    return this.request(HttpMethods.GET, HttpUrl.filesWithParams, data);
+  }
+
+  static renameFileList(data: any) {
+    return this.request(HttpMethods.POST, HttpUrl.files, data);
+  }
+
+  static copyOrMoveFile(data: any) {
+    return this.request(HttpMethods.POST, HttpUrl.files, data);
+  }
+
+  static deleteFileList(data: any) {
+    return this.request(HttpMethods.DELETE, HttpUrl.files, data);
   }
 }

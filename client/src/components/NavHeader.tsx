@@ -60,7 +60,7 @@ const Wrapper = styled.div`
   }
 `;
 
-const Header: React.FC<PropType> = props => {
+export const NavHeader: React.FC<PropType> = props => {
   const { state } = useContext(ConfigContext);
   const { pathname } = useLocation();
   const history = useHistory();
@@ -104,5 +104,3 @@ const Header: React.FC<PropType> = props => {
     </Wrapper>
   );
 };
-
-export default Header;
