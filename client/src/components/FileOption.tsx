@@ -6,28 +6,28 @@ import { Api } from '../services';
 
 export const useFileOption = () => {
   const methods = {
-    init: async (fn: (data: any) => Promise<any>, data: any) => {
+    async init(fn: () => Promise<any>) {
       message.loading(intl.get('files.table.option.loading'), 0);
-      const res = await fn(data);
+      const res = await fn();
       message.destroy();
       if (res) {
-        message.success('files.table.option.success');
+        message.success(intl.get('files.table.option.success'));
       } else {
-        message.error('files.table.option.error');
+        message.error(intl.get('files.table.option.error'));
       }
       return res;
     },
-    list: (path: string) => {
-      return Api.getFileList({
+    create: (path: string) => {
+      return Api.createFile({
         params: {
           path,
         },
       });
     },
-    rename: (files: { oldPath: string; newPath: string }[]) => {
-      return methods.init(Api.renameFileList, {
-        data: {
-          files,
+    list: (path: string) => {
+      return Api.getFileList({
+        params: {
+          path,
         },
       });
     },
@@ -37,7 +37,7 @@ export const useFileOption = () => {
         icon: <ExclamationCircleOutlined />,
         content: intl.get('files.table.option.delete.tips'),
         async onOk() {
-          await Api.deleteFileList({
+          await Api.deleteFile({
             data: {
               files,
             },
@@ -46,17 +46,15 @@ export const useFileOption = () => {
         },
       });
     },
-    copyOrMove: (
-      type: string,
-      files: { oldPath: string; newPath: string }[],
-    ) => {
-      return methods.init(Api.copyOrMoveFile, {
-        data: {
-          type,
-          files,
-        },
-      });
-    },
+    copyOrMove: (type: string, files: { oldPath: string; newPath: string }[]) =>
+      methods.init(() =>
+        Api.copyOrMoveFile({
+          data: {
+            type: type === 'copy' ? type : 'move',
+            files,
+          },
+        }),
+      ),
   };
 
   return methods;

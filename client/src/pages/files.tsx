@@ -7,6 +7,7 @@ import {
   CopyOutlined,
   ScissorOutlined,
   DeleteOutlined,
+  RedoOutlined,
 } from '@ant-design/icons';
 import styled from 'styled-components';
 import { ColumnProps } from 'antd/es/table';
@@ -18,9 +19,10 @@ interface PropType {}
 
 interface List {
   name: string;
-  type: 'fiile' | 'folder';
+  type: string;
   size: number;
   mtimeMs: number;
+  add?: boolean;
 }
 
 const Wrapper = styled.div`
@@ -63,6 +65,17 @@ const Files: React.FC<PropType> = props => {
 
   const methods = useFileOption();
 
+  const addNew = () => {
+    const newItem = {
+      name: '新建文件夹',
+      type: 'folder',
+      size: 0,
+      mtimeMs: 0,
+      add: true,
+    };
+    setData([newItem, ...data]);
+  };
+
   const enterChildren = (name: string, type: string) => {
     if (type === 'folder' && name) {
       setDir((dir ? dir + '/' : '') + name);
@@ -72,22 +85,34 @@ const Files: React.FC<PropType> = props => {
   const getFileList = async () => {
     setSelect([]);
     setLoading(true);
-    const res = await methods.list(dir);
+    const res: List[] = await methods.list(dir);
     if (res) {
-      setData(res);
+      setData(res.sort((a, b) => b.type.localeCompare(a.type)));
     }
     setLoading(false);
   };
 
-  const singleChange = (
-    dir: string,
+  const singleChange = async (
+    name: string,
     type: string,
-    newPath: string | undefined,
+    newName: string = '',
   ) => {
+    console.log(name, type, newName);
+    const oldPath = dir + '/' + name;
+    const newPath = dir + '/' + newName;
     if (type === 'folder') {
-      enterChildren(dir, type);
+      setDir(oldPath);
     } else if (type === 'delete') {
-      methods.delete([dir], getFileList);
+      methods.delete([oldPath], getFileList);
+      getFileList();
+    } else if (type === 'rename' || type === 'move' || type === 'copy') {
+      await methods.copyOrMove(type, [{ oldPath, newPath }]);
+      getFileList();
+    } else if (type === 'add') {
+      await methods.create(oldPath);
+      getFileList();
+    } else if (type === 'fail') {
+      getFileList();
     }
   };
 
@@ -106,6 +131,7 @@ const Files: React.FC<PropType> = props => {
           type={record.type}
           name={val}
           onChange={singleChange}
+          add={record.add}
         ></Filename>
       ),
     },
@@ -132,7 +158,7 @@ const Files: React.FC<PropType> = props => {
           <UploadOutlined />
           {intl.get('files.btn.upload')}
         </Button>
-        <Button>
+        <Button onClick={addNew}>
           <FolderAddOutlined />
           {intl.get('files.btn.new.folder')}
         </Button>
@@ -153,6 +179,13 @@ const Files: React.FC<PropType> = props => {
             </Button>
           </span>
         )}
+        <Button
+          style={{ float: 'right', marginRight: '0' }}
+          onClick={getFileList}
+        >
+          <RedoOutlined />
+          {intl.get('files.btn.refresh.folder')}
+        </Button>
       </div>
       <div className="content">
         <div className="tableInfo">

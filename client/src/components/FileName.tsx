@@ -40,7 +40,7 @@ const Wrapper = styled.div`
 
     .icon {
       margin-left: 12px;
-      font-size: 18px;
+      font-size: 16px;
       color: ${props => props.color};
       cursor: pointer;
     }
@@ -75,13 +75,14 @@ const Wrapper = styled.div`
 type PropsType = {
   type: string;
   name: string;
+  add?: boolean;
   onChange: (name: string, type: string, newName?: string) => void;
 };
 
 export const Filename = (props: PropsType) => {
-  const { type, name, onChange } = props;
+  const { type, name, onChange, add = false } = props;
 
-  const [edit, setEdit] = useState<boolean>(false);
+  const [edit, setEdit] = useState<boolean>(add);
   const [title, setTitle] = useState<string>(name);
   const { state } = useContext(ConfigContext);
 
@@ -90,6 +91,22 @@ export const Filename = (props: PropsType) => {
   const editMode = () => {
     setEdit(true);
     setTitle(name);
+  };
+
+  const submit = () => {
+    if (add) {
+      onChange(title, 'add');
+    } else {
+      onChange(name, 'rename', title);
+    }
+  };
+
+  const fail = () => {
+    if (add) {
+      onChange('', 'fail');
+    } else {
+      setEdit(false);
+    }
   };
 
   return (
@@ -123,19 +140,16 @@ export const Filename = (props: PropsType) => {
         ) : (
           <>
             <Input
+              size="small"
               value={title}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                 setTitle(e.target.value)
               }
               autoFocus
-              onBlur={() => setEdit(false)}
-              onPressEnter={() => onChange(name, 'rename', title)}
+              onPressEnter={submit}
             ></Input>
-            <CheckOutlined
-              className="icon"
-              onClick={() => onChange(name, 'rename', title)}
-            />
-            <CloseOutlined className="icon" onClick={() => setEdit(false)} />
+            <CheckOutlined className="icon" onClick={submit} />
+            <CloseOutlined className="icon" onClick={fail} />
           </>
         )}
       </div>

@@ -93,15 +93,15 @@ export class Api {
     return this.request(HttpMethods.GET, HttpUrl.filesWithParams, data);
   }
 
-  static renameFileList(data: any) {
-    return this.request(HttpMethods.POST, HttpUrl.files, data);
+  static createFile(data: any) {
+    return this.request(HttpMethods.POST, HttpUrl.filesWithParams, data);
   }
 
   static copyOrMoveFile(data: any) {
     return this.request(HttpMethods.POST, HttpUrl.files, data);
   }
 
-  static deleteFileList(data: any) {
+  static deleteFile(data: any) {
     return this.request(HttpMethods.DELETE, HttpUrl.files, data);
   }
 }

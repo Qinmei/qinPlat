@@ -28,6 +28,7 @@ export default {
   'files.btn.copy.folder': '复制文件',
   'files.btn.move.folder': '移动文件',
   'files.btn.delete.folder': '删除文件',
+  'files.btn.refresh.folder': '刷新文件',
   'files.table.name': '文件名',
   'files.table.size': '大小',
   'files.table.time': '修改时间',
