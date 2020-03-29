@@ -93,6 +93,10 @@ export class Api {
     return this.request(HttpMethods.GET, HttpUrl.filesWithParams, data);
   }
 
+  static getAllFileList() {
+    return this.request(HttpMethods.GET, HttpUrl.files, {});
+  }
+
   static createFile(data: any) {
     return this.request(HttpMethods.POST, HttpUrl.filesWithParams, data);
   }

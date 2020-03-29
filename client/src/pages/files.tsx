@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import intl from 'react-intl-universal';
-import { Button, Table } from 'antd';
+import { Button, Table, Input } from 'antd';
 import {
   UploadOutlined,
   FolderAddOutlined,
@@ -12,7 +12,14 @@ import {
 import styled from 'styled-components';
 import { ColumnProps } from 'antd/es/table';
 import moment from 'moment';
-import { BreadTabs, Filename, useFileOption } from '../components';
+import { DndProvider, useDrag, useDrop } from 'react-dnd';
+import {
+  BreadTabs,
+  Filename,
+  useFileOption,
+  FileDirAll,
+  RefAll,
+} from '../components';
 import { sizeTransfer } from '../utils';
 
 interface PropType {}
@@ -24,6 +31,8 @@ interface List {
   mtimeMs: number;
   add?: boolean;
 }
+
+type FilesData = { oldPath: string; newPath: string }[];
 
 const Wrapper = styled.div`
   user-select: none;
@@ -39,6 +48,10 @@ const Wrapper = styled.div`
   .content {
     .tableInfo {
       margin-top: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
       .ant-btn-link {
         padding: 0;
       }
@@ -59,15 +72,18 @@ const Wrapper = styled.div`
 
 const Files: React.FC<PropType> = props => {
   const [dir, setDir] = useState<string>('');
+  const [title, setTitle] = useState<string>('');
   const [data, setData] = useState<List[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [select, setSelect] = useState<React.ReactText[]>([]);
+
+  const allDirRef = useRef<RefAll>(null);
 
   const methods = useFileOption();
 
   const addNew = () => {
     const newItem = {
-      name: '新建文件夹',
+      name: '新建文件夹' + data.length,
       type: 'folder',
       size: 0,
       mtimeMs: 0,
@@ -97,15 +113,15 @@ const Files: React.FC<PropType> = props => {
     type: string,
     newName: string = '',
   ) => {
-    console.log(name, type, newName);
-    const oldPath = dir + '/' + name;
-    const newPath = dir + '/' + newName;
+    const oldPath = (dir ? dir + '/' : '') + name;
+    const newPath = (dir ? dir + '/' : '') + newName;
     if (type === 'folder') {
       setDir(oldPath);
     } else if (type === 'delete') {
       methods.delete([oldPath], getFileList);
-      getFileList();
-    } else if (type === 'rename' || type === 'move' || type === 'copy') {
+    } else if (type === 'copy' || type === 'move') {
+      allDirRef.current && allDirRef.current.show({ type, files: [oldPath] });
+    } else if (type === 'rename') {
       await methods.copyOrMove(type, [{ oldPath, newPath }]);
       getFileList();
     } else if (type === 'add') {
@@ -116,8 +132,23 @@ const Files: React.FC<PropType> = props => {
     }
   };
 
+  const batchChange = (type: string) => {
+    const newFiles = select.map(item => (dir ? dir + '/' : '') + item);
+    if (type === 'delete') {
+      methods.delete(newFiles, getFileList);
+    } else if (type === 'move' || type === 'copy') {
+      allDirRef.current && allDirRef.current.show({ type, files: newFiles });
+    }
+  };
+
+  const submit = async (type: string, files: FilesData) => {
+    await methods.copyOrMove(type, files);
+    getFileList();
+  };
+
   useEffect(() => {
     getFileList();
+    setTitle('');
   }, [dir]);
 
   const columns: ColumnProps<List>[] = [
@@ -140,7 +171,7 @@ const Files: React.FC<PropType> = props => {
       dataIndex: 'size',
       width: 300,
       sorter: (a, b) => a.size - b.size,
-      render: val => sizeTransfer(val),
+      render: (val, record) => sizeTransfer(record.type === 'folder' ? 0 : val),
     },
     {
       title: intl.get('files.table.time'),
@@ -150,6 +181,11 @@ const Files: React.FC<PropType> = props => {
       sorter: (a, b) => a.mtimeMs - b.mtimeMs,
     },
   ];
+
+  const filterFile = (data: List[]) => {
+    const pattern = new RegExp(title);
+    return data.filter(item => pattern.test(item.name));
+  };
 
   return (
     <Wrapper>
@@ -165,53 +201,61 @@ const Files: React.FC<PropType> = props => {
 
         {select.length > 0 && (
           <span className="divider">
-            <Button>
+            <Button onClick={() => batchChange('copy')}>
               <CopyOutlined />
               {intl.get('files.btn.copy.folder')}
             </Button>
-            <Button>
+            <Button onClick={() => batchChange('move')}>
               <ScissorOutlined />
               {intl.get('files.btn.move.folder')}
             </Button>
-            <Button danger onClick={() => methods.delete(select)}>
+            <Button danger onClick={() => batchChange('delete')}>
               <DeleteOutlined />
               {intl.get('files.btn.delete.folder')}
             </Button>
           </span>
         )}
-        <Button
+        {/* <Button
           style={{ float: 'right', marginRight: '0' }}
           onClick={getFileList}
         >
           <RedoOutlined />
           {intl.get('files.btn.refresh.folder')}
-        </Button>
+        </Button> */}
+
+        <Input.Search
+          placeholder={intl.get('files.table.search.tips')}
+          style={{ width: '280px', float: 'right' }}
+          onSearch={value => setTitle(value)}
+        />
       </div>
       <div className="content">
         <div className="tableInfo">
           <BreadTabs dir={dir} setDir={setDir}></BreadTabs>
+          <span>{intl.get('common.total', { total: data.length })}</span>
         </div>
         <div className="tableMain">
           <Table
             rowKey="name"
             size="small"
-            dataSource={data}
+            dataSource={filterFile(data)}
             columns={columns}
             pagination={false}
-            loading={loading && data.length === 0}
+            loading={loading}
             rowSelection={{
+              columnWidth: 68,
               selectedRowKeys: select,
               onChange: (value: React.ReactText[]) => setSelect(value),
             }}
             onRow={record => {
               return {
-                // onClick: () => setSelect([record.name]),
                 onDoubleClick: event => enterChildren(record.name, record.type),
               };
             }}
           ></Table>
         </div>
       </div>
+      <FileDirAll ref={allDirRef} submit={submit}></FileDirAll>
     </Wrapper>
   );
 };

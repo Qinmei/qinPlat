@@ -1,5 +1,8 @@
 export default {
   'common.total': '共{total}条数据',
+  'common.cancel': '取消',
+  'common.confirm': '确认',
+  'common.refresh': '刷新',
   'request.error.unknown': '未知错误',
   'request.error.401': '认证失败',
   'header.images': '图片',
@@ -28,7 +31,7 @@ export default {
   'files.btn.copy.folder': '复制文件',
   'files.btn.move.folder': '移动文件',
   'files.btn.delete.folder': '删除文件',
-  'files.btn.refresh.folder': '刷新文件',
+  'files.btn.refresh.folder': '刷新目录',
   'files.table.name': '文件名',
   'files.table.size': '大小',
   'files.table.time': '修改时间',
@@ -42,4 +45,8 @@ export default {
   'files.table.option.error': '操作失败',
   'files.table.option.delete.title': '确认删除?',
   'files.table.option.delete.tips': '文件一旦删除不可恢复, 请确认是否删除?',
+  'files.modal.title.': '选择文件夹',
+  'files.modal.title.copy': '复制到',
+  'files.modal.title.move': '移动到',
+  'files.table.search.tips': '搜索当前目录的文件',
 };
