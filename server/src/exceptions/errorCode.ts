@@ -36,4 +36,14 @@ export class ErrorCode {
     code: 20007,
     msg: '文件目录获取错误',
   };
+
+  static readonly FileHashExist: CodeMsg = {
+    code: 20008,
+    msg: '已存在相同的文件',
+  };
+
+  static readonly FileSessionError: CodeMsg = {
+    code: 20009,
+    msg: '上传会话不存在',
+  };
 }

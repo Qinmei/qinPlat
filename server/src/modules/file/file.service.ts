@@ -1,14 +1,20 @@
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import * as rimraf from 'rimraf';
+import { File } from './file.entity';
 import { Config } from '../../config';
-import { File, ParamsData, RenameData, DirTree } from './interfaces';
+import { FileItem, ParamsData, RenameData, DirTree } from './interfaces';
 
 @Injectable()
 export class FileService {
   private readonly basePath: string;
-  constructor() {
+  constructor(
+    @InjectRepository(File)
+    private readonly fileRepository: Repository<File>,
+  ) {
     const filePath = Config.filePath;
     this.basePath = path.join(__dirname, '../../../../', filePath);
   }
@@ -28,12 +34,12 @@ export class FileService {
     return result.isFile();
   }
 
-  async list(pathInfo: ParamsData): Promise<File[]> {
+  async list(pathInfo: ParamsData): Promise<FileItem[]> {
     const filePath = this.getParamsFilePath(pathInfo);
 
     const data = await fs.readdirSync(filePath);
 
-    const result: File[] = [];
+    const result: FileItem[] = [];
     for (const item of data) {
       const itemInfo = await fs.statSync(filePath + '/' + item);
       const isFile = itemInfo.isFile();
@@ -121,5 +127,37 @@ export class FileService {
       }
     }
     return result;
+  }
+
+  async existSameFile(hash: string): Promise<File> {
+    return await this.fileRepository.findOne({ hash });
+  }
+
+  async createFile(file: any, dir: string): Promise<boolean> {
+    const fileDir = this.getFilePath(dir);
+
+    try {
+      await fs.statSync(fileDir);
+    } catch (error) {
+      await fs.mkdirSync(fileDir, { recursive: true });
+    }
+
+    const filePath = path.join(this.basePath, dir, file.originalname);
+    await fs.writeFileSync(filePath, file.buffer);
+    return true;
+  }
+
+  async updateFile(
+    file: any,
+    name: string,
+    dir: string,
+    start: number,
+  ): Promise<boolean> {
+    const fileDir = path.join(this.basePath, dir, name);
+
+    const fileStream = fs.createWriteStream(fileDir, { start });
+    fileStream.write(file.buffer);
+
+    return true;
   }
 }

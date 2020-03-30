@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 
-export interface File extends fs.Stats {
+export interface FileItem extends fs.Stats {
   type: string;
   name: string;
 }

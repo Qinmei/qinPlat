@@ -77,7 +77,7 @@ export const NavHeader: React.FC<PropType> = props => {
       <div className="logo">QinPlat</div>
       {pathname !== '/login' && [
         <div className="main">
-          <NavLink to="/images" activeClassName="active" className="list">
+          {/* <NavLink to="/images" activeClassName="active" className="list">
             {intl.get('header.images')}
           </NavLink>
           <NavLink to="/videos" activeClassName="active" className="list">
@@ -85,9 +85,12 @@ export const NavHeader: React.FC<PropType> = props => {
           </NavLink>
           <NavLink to="/subtitles" activeClassName="active" className="list">
             {intl.get('header.subtitles')}
-          </NavLink>
+          </NavLink> */}
           <NavLink to="/files" activeClassName="active" className="list">
             {intl.get('header.files')}
+          </NavLink>
+          <NavLink to="/upload" activeClassName="active" className="list">
+            {intl.get('header.upload')}
           </NavLink>
           <NavLink to="/setting" activeClassName="active" className="list">
             {intl.get('header.setting')}

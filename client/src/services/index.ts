@@ -15,10 +15,14 @@ enum HttpUrl {
   logs = '/history',
   files = '/file',
   filesWithParams = '/file/:path',
+  upload = '/upload',
+  uploadBigStart = '/upload/createSession',
+  uploadBigUpdate = '/upload/:id',
 }
 
 export class Api {
   static readonly apiPrefix: string = 'http://localhost:7000/api/v1';
+
   static async request(methods: HttpMethods, url: HttpUrl, options?: any) {
     const { params, query, data, formData } = options;
 
@@ -107,5 +111,17 @@ export class Api {
 
   static deleteFile(data: any) {
     return this.request(HttpMethods.DELETE, HttpUrl.files, data);
+  }
+
+  static uploadSmall(data: any) {
+    return this.request(HttpMethods.POST, HttpUrl.upload, data);
+  }
+
+  static uploadBigStart(data: any) {
+    return this.request(HttpMethods.POST, HttpUrl.uploadBigStart, data);
+  }
+
+  static uploadBigUpdate(data: any) {
+    return this.request(HttpMethods.POST, HttpUrl.uploadBigUpdate, data);
   }
 }

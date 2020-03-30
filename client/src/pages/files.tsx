@@ -18,6 +18,7 @@ import {
   useFileOption,
   FileDirAll,
   RefAll,
+  UploadButton,
 } from '../components';
 import { sizeTransfer } from '../utils';
 
@@ -36,6 +37,13 @@ type FilesData = { oldPath: string; newPath: string }[];
 const Wrapper = styled.div`
   user-select: none;
   .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    .option {
+      display: flex;
+    }
     .ant-btn {
       margin-right: 15px;
     }
@@ -91,9 +99,12 @@ const Files: React.FC<PropType> = props => {
     setData([newItem, ...data]);
   };
 
-  const enterChildren = (name: string, type: string) => {
-    if (type === 'folder' && name) {
-      setDir((dir ? dir + '/' : '') + name);
+  const singleClick = (value: string) => {
+    if (select.includes(value)) {
+      const newSelect = select.filter(item => item !== value);
+      setSelect(newSelect);
+    } else {
+      setSelect([...select, value]);
     }
   };
 
@@ -189,31 +200,31 @@ const Files: React.FC<PropType> = props => {
   return (
     <Wrapper>
       <div className="header">
-        <Button type="primary">
-          <UploadOutlined />
-          {intl.get('files.btn.upload')}
-        </Button>
-        <Button onClick={addNew}>
-          <FolderAddOutlined />
-          {intl.get('files.btn.new.folder')}
-        </Button>
+        <div className="option">
+          <UploadButton dir={dir} confirm={getFileList}></UploadButton>
 
-        {select.length > 0 && (
-          <span className="divider">
-            <Button onClick={() => batchChange('copy')}>
-              <CopyOutlined />
-              {intl.get('files.btn.copy.folder')}
-            </Button>
-            <Button onClick={() => batchChange('move')}>
-              <ScissorOutlined />
-              {intl.get('files.btn.move.folder')}
-            </Button>
-            <Button danger onClick={() => batchChange('delete')}>
-              <DeleteOutlined />
-              {intl.get('files.btn.delete.folder')}
-            </Button>
-          </span>
-        )}
+          <Button onClick={addNew}>
+            <FolderAddOutlined />
+            {intl.get('files.btn.new.folder')}
+          </Button>
+
+          {select.length > 0 && (
+            <span className="divider">
+              <Button onClick={() => batchChange('copy')}>
+                <CopyOutlined />
+                {intl.get('files.btn.copy.folder')}
+              </Button>
+              <Button onClick={() => batchChange('move')}>
+                <ScissorOutlined />
+                {intl.get('files.btn.move.folder')}
+              </Button>
+              <Button danger onClick={() => batchChange('delete')}>
+                <DeleteOutlined />
+                {intl.get('files.btn.delete.folder')}
+              </Button>
+            </span>
+          )}
+        </div>
         {/* <Button
           style={{ float: 'right', marginRight: '0' }}
           onClick={getFileList}
@@ -248,7 +259,7 @@ const Files: React.FC<PropType> = props => {
             }}
             onRow={record => {
               return {
-                onDoubleClick: event => enterChildren(record.name, record.type),
+                onClick: event => singleClick(record.name),
               };
             }}
           ></Table>

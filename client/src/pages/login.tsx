@@ -34,7 +34,7 @@ const Login: React.FC<PropType> = props => {
       if (res) {
         const { token } = res;
         sessionStorage.setItem('token', token);
-        history.push('/images');
+        history.push('/upload');
       }
     });
   };

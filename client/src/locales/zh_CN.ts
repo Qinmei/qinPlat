@@ -5,6 +5,7 @@ export default {
   'common.refresh': '刷新',
   'request.error.unknown': '未知错误',
   'request.error.401': '认证失败',
+  'header.upload': '上传',
   'header.images': '图片',
   'header.subtitles': '字幕',
   'header.videos': '视频',
@@ -49,4 +50,5 @@ export default {
   'files.modal.title.copy': '复制到',
   'files.modal.title.move': '移动到',
   'files.table.search.tips': '搜索当前目录的文件',
+  'upload.box.tips': '点击或拖拽文件到此区域来上传文件',
 };

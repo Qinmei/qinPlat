@@ -4,6 +4,7 @@ import { StaticModule } from './basis/static.module';
 import { TokenModule } from './basis/token.module';
 import { HistoryModule } from './history/history.module';
 import { FileModule } from './file/file.module';
+import { UploadModule } from './upload/upload.module';
 
 const AllModules = [
   StaticModule,
@@ -11,6 +12,7 @@ const AllModules = [
   HistoryModule,
   SettingModule,
   FileModule,
+  UploadModule,
 ];
 
 export {
@@ -20,5 +22,6 @@ export {
   TokenModule,
   StaticModule,
   FileModule,
+  UploadModule,
   AllModules,
 };
