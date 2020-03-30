@@ -147,15 +147,10 @@ export class FileService {
     return true;
   }
 
-  async updateFile(
-    file: any,
-    name: string,
-    dir: string,
-    start: number,
-  ): Promise<boolean> {
+  async updateFile(file: any, name: string, dir: string): Promise<boolean> {
     const fileDir = path.join(this.basePath, dir, name);
 
-    const fileStream = fs.createWriteStream(fileDir, { start });
+    const fileStream = fs.createWriteStream(fileDir);
     fileStream.write(file.buffer);
 
     return true;

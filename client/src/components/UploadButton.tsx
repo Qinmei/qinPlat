@@ -44,7 +44,7 @@ export const UploadButton: React.FC<PropsType> = props => {
   };
 
   const uploadBig = async (file: RcFile) => {
-    const fileChunkList = createFileChunk(file);
+    const fileChunkList = await createFileChunk(file);
     const fileHash = await calculateHash(fileChunkList);
     const start = await Api.uploadBigStart({
       data: {
@@ -55,24 +55,38 @@ export const UploadButton: React.FC<PropsType> = props => {
       },
     });
     if (start) {
-      uploadBigUpdate(start.uuid, fileChunkList);
+      uploadBigUpdate(start.uuid, fileChunkList, file.size);
     }
   };
 
   const uploadBigUpdate = async (
     uuid: string,
-    fileChunkList: { file: any }[],
+    fileChunkList: Blob[],
+    size: number,
   ) => {
+    let count = 0;
     for (const ele of fileChunkList) {
+      const formData = new FormData();
+      formData.append('file', ele);
+      formData.append('start', (count * 1024 * 1024 * 10).toString());
+      formData.append('end', ((count + 1) * 1024 * 1024 * 10).toString());
+      formData.append('size', size.toString());
+      await Api.uploadBigUpdate({
+        params: {
+          id: uuid,
+        },
+        formData,
+      });
+      count++;
     }
   };
 
-  const createFileChunk = (file: any) => {
+  const createFileChunk = (file: RcFile) => {
     const size = 1024 * 1024 * 10;
     const fileChunkList = [];
     let cur = 0;
     while (cur < file.size) {
-      fileChunkList.push({ file: file.slice(cur, cur + size) });
+      fileChunkList.push(file.slice(cur, cur + size));
       cur += size;
     }
     return fileChunkList;

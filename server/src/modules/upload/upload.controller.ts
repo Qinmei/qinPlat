@@ -36,7 +36,6 @@ export class UploadController {
   @NoAuth(true)
   async createBigFile(@Body() data: CreateDto) {
     const exist = await this.uploadService.existFileHash(data.hash);
-    console.log(exist, !data.force);
     if (exist && !data.force) {
       throw new BusinessException(ErrorCode.FileHashExist);
     }
@@ -45,17 +44,21 @@ export class UploadController {
 
   @Post('/:id')
   @NoAuth(true)
-  @UseInterceptors(AnyFilesInterceptor())
+  @UseInterceptors(FileInterceptor('file'))
   async uploadBigFile(
-    @Param() id: string,
+    @Param() params: { id: string },
     @UploadedFile() file,
-    @Body() data: UploadDto,
+    @Body() data,
   ) {
-    const info = await this.uploadService.find(id);
+    const info = await this.uploadService.find(params.id);
     if (!info) {
       throw new BusinessException(ErrorCode.FileSessionError);
     }
-    return await this.uploadService.uploadBigFile({ uuid: id, file, ...data });
+    return await this.uploadService.uploadBigFile({
+      uuid: params.id,
+      file,
+      ...data,
+    });
   }
 
   @Get('/:id')

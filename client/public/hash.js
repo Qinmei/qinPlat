@@ -8,7 +8,7 @@ self.onmessage = e => {
   let count = 0;
   const loadNext = index => {
     const reader = new FileReader();
-    reader.readAsArrayBuffer(fileChunkList[index].file);
+    reader.readAsArrayBuffer(fileChunkList[index]);
     reader.onload = e => {
       count++;
       spark.append(e.target.result);

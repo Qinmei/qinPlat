@@ -54,22 +54,21 @@ export class UploadService {
       receive: 0,
       done: false,
     };
-    return await this.uploadRepository.create(initData);
+    return await this.uploadRepository.save(initData);
   }
 
   async uploadBigFile(data: UploadData): Promise<any | undefined> {
-    const { uuid, range, size, file } = data;
+    const { uuid, start, end, size, file } = data;
     const info = await this.find(uuid);
     const result = await this.fileService.updateFile(
       file,
       info.name,
       info.directory,
-      range[0],
     );
 
     if (result) {
-      const done = range[1] === info.size;
-      await this.update(info.id, { done, receive: range[1] });
+      const done = end === info.size;
+      await this.update(info.id, { done, receive: end });
     }
     return true;
   }
