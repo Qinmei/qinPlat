@@ -178,7 +178,7 @@ export const Filename = (props: PropsType) => {
             >
               <ScissorOutlined
                 className="icon"
-                onClick={() => onChange(name, 'delete')}
+                onClick={() => onChange(name, 'move')}
               />
             </Tooltip>
             <Tooltip

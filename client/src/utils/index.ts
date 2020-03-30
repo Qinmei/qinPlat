@@ -11,3 +11,25 @@ export const sizeTransfer = (size: number) => {
     return `${(sizeKB / 1024 / 1024).toFixed(1)}G`;
   }
 };
+
+export const treeTransfer = (
+  data: any[],
+  icon: any,
+  parentKey: string = '',
+) => {
+  let result: any[] = [];
+  result = data.map(item => {
+    const key = (parentKey ? parentKey + '/' : '') + item.name;
+    if (item.children.length > 0) {
+      item.children = treeTransfer(item.children, icon, key);
+    }
+
+    return {
+      title: item.name,
+      key,
+      icon,
+      ...item,
+    };
+  });
+  return result;
+};
