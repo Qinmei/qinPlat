@@ -59,6 +59,14 @@ export const UploadButton: React.FC<PropsType> = props => {
     }
   };
 
+  const sleep = async () => {
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        resolve();
+      }, 1000);
+    });
+  };
+
   const uploadBigUpdate = async (
     uuid: string,
     fileChunkList: Blob[],
@@ -71,7 +79,7 @@ export const UploadButton: React.FC<PropsType> = props => {
       formData.append('start', (count * 1024 * 1024 * 10).toString());
       formData.append('end', ((count + 1) * 1024 * 1024 * 10).toString());
       formData.append('size', size.toString());
-      await Api.uploadBigUpdate({
+      Api.uploadBigUpdate({
         params: {
           id: uuid,
         },

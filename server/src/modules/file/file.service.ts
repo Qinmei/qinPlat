@@ -147,19 +147,27 @@ export class FileService {
     return true;
   }
 
-  async updateFile(
+  updateFile(
     file: any,
     name: string,
     dir: string,
     start: number,
   ): Promise<boolean> {
-    const fileDir = path.join(this.basePath, dir, name);
+    return new Promise((resolve, reject) => {
+      const fileDir = path.join(this.basePath, dir, name);
 
-    // const fileStream = fs.createWriteStream(fileDir, { flag: 'a', start });
-    // fileStream.end(file.buffer);
+      const fileStream = fs.createWriteStream(fileDir, { flags: 'as+', start });
+      fileStream.write(file.buffer);
+      fileStream.close();
 
-    await fs.appendFileSync(fileDir, file.buffer);
+      fileStream.on('error', err => {
+        fileStream.end();
+        reject(err);
+      });
 
-    return true;
+      fileStream.on('close', () => {
+        resolve(true);
+      });
+    });
   }
 }
