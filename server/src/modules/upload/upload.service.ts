@@ -64,6 +64,7 @@ export class UploadService {
       file,
       info.name,
       info.directory,
+      Number(start),
     );
 
     if (result) {

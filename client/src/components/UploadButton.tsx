@@ -23,12 +23,12 @@ export const UploadButton: React.FC<PropsType> = props => {
   const beforeUploadHandler = async (fileList: RcFile[]): Promise<void> => {
     setLoading(true);
     for (const file of fileList) {
-      const size = file.size / 1024 / 1024;
-      if (size < 10) {
-        await uploadSmall(file);
-      } else {
-        uploadBig(file);
-      }
+      // const size = file.size / 1024 / 1024;
+      // if (size < 10) {
+      //   await uploadSmall(file);
+      // } else {
+      uploadBig(file);
+      // }
       confirm();
     }
     setLoading(false);
