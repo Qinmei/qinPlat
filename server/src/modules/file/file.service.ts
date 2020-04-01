@@ -1,20 +1,14 @@
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import * as rimraf from 'rimraf';
-import { File } from './file.entity';
 import { Config } from '../../config';
 import { FileItem, ParamsData, RenameData, DirTree } from './interfaces';
 
 @Injectable()
 export class FileService {
   private readonly basePath: string;
-  constructor(
-    @InjectRepository(File)
-    private readonly fileRepository: Repository<File>,
-  ) {
+  constructor() {
     const filePath = Config.filePath;
     this.basePath = path.join(__dirname, '../../../../', filePath);
   }
@@ -127,10 +121,6 @@ export class FileService {
       }
     }
     return result;
-  }
-
-  async existSameFile(hash: string): Promise<File> {
-    return await this.fileRepository.findOne({ hash });
   }
 
   async createFile(file: any, dir: string): Promise<boolean> {

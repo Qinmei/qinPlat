@@ -3,14 +3,13 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Setting } from '../setting/setting.entity';
 import { History } from '../history/history.entity';
 import { Upload } from '../upload/upload.entity';
-import { File } from '../file/file.entity';
 
 @Module({
   imports: [
     TypeOrmModule.forRoot({
       type: 'sqlite',
       database: './src/modules/basis/sqlite/db.sqlite',
-      entities: [Setting, History, Upload, File],
+      entities: [Setting, History, Upload],
       synchronize: true,
     }),
   ],

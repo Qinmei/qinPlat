@@ -43,7 +43,10 @@ export class UploadService {
   }
 
   async existFileHash(hash: string): Promise<boolean> {
-    const exist = await this.fileService.existSameFile(hash);
+    const exist = await this.uploadRepository.findOne({
+      hash,
+      status: 'uploading',
+    });
     return !!exist;
   }
 
@@ -51,14 +54,36 @@ export class UploadService {
     const initData = {
       ...data,
       uuid: uuidv4(),
-      receive: 0,
-      done: false,
+      status: 'uploading',
     };
     return await this.uploadRepository.save(initData);
   }
 
+  async getUploadBigFileInfo(uuid: string): Promise<any | undefined> {
+    return await this.uploadRepository.findOne({
+      uuid,
+    });
+  }
+
+  fingureFileUploadStatus(receive: Array<[number, number]>, size: number) {
+    const newArr = receive.sort((a, b) => a[0] - b[0]);
+    const fileFilled = [...newArr, [size, size]];
+    const fileMissing = fileFilled.reduce(
+      (pre, cur) => {
+        const last = pre[pre.length - 1];
+        if (last[1] !== cur[0]) {
+          pre.push([last[1], cur[0]]);
+        }
+        return pre;
+      },
+      [[0, 0]],
+    );
+    fileMissing.shift();
+    return fileMissing;
+  }
+
   async uploadBigFile(data: UploadData): Promise<any | undefined> {
-    const { uuid, start, end, size, file } = data;
+    const { uuid, start, end, file, size } = data;
     const info = await this.find(uuid);
     const result = await this.fileService.updateFile(
       file,
@@ -68,10 +93,15 @@ export class UploadService {
     );
 
     if (result) {
-      const done = end === info.size;
-      await this.update(info.id, { done, receive: end });
+      info.receive.push([Number(start), Number(end)]);
+      const isDone = this.fingureFileUploadStatus(info.receive, Number(size));
+      await this.update(info.id, {
+        status: isDone.length === 0 ? 'uploaded' : 'uploading',
+        receive: info.receive,
+      });
+      return isDone;
     }
-    return true;
+    return false;
   }
 
   async update(id: number, data: Partial<Upload>): Promise<any | undefined> {
