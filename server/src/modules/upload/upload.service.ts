@@ -42,19 +42,55 @@ export class UploadService {
     );
   }
 
-  async existFileHash(hash: string): Promise<boolean> {
-    const exist = await this.uploadRepository.findOne({
+  async existUploadedFile(directory: string, name: string) {
+    return await this.fileService.fileExist(directory, name);
+  }
+
+  async existFileHash(hash: string): Promise<Upload | boolean> {
+    const fileInfo = await this.uploadRepository.findOne({
       hash,
       status: 'uploading',
     });
-    return !!exist;
+
+    // 可以创建任务
+
+    if (!fileInfo) {
+      return false;
+    }
+
+    // 创建文件上传任务但是没有上传文件块
+    const receive = JSON.parse(fileInfo.receive);
+
+    if (receive.length === 0) {
+      return fileInfo;
+    }
+
+    // 判断本地文件是否还存在, 以便数据库的文件能够对的上
+
+    const fileExist = await this.fileService.fileExist(
+      fileInfo.directory,
+      fileInfo.name,
+    );
+
+    // 如果文件不存在就将本条记录记录为删除
+
+    if (!fileExist) {
+      await this.update(fileInfo.id, {
+        status: 'delete',
+      });
+      return false;
+    }
+
+    return fileInfo;
   }
 
   async createBigFile(data: CreateDto): Promise<any | undefined> {
     const initData = {
       ...data,
+      name: '~' + data.name,
       uuid: uuidv4(),
       status: 'uploading',
+      receive: JSON.stringify([]),
     };
     return await this.uploadRepository.save(initData);
   }
@@ -66,19 +102,19 @@ export class UploadService {
   }
 
   fingureFileUploadStatus(receive: Array<[number, number]>, size: number) {
+    // 获得文件中缺失的文件区块
     const newArr = receive.sort((a, b) => a[0] - b[0]);
     const fileFilled = [...newArr, [size, size]];
-    const fileMissing = fileFilled.reduce(
+    const fileMissing: Array<[number, number]> = [];
+    fileFilled.reduce(
       (pre, cur) => {
-        const last = pre[pre.length - 1];
-        if (last[1] !== cur[0]) {
-          pre.push([last[1], cur[0]]);
+        if (pre[1] < cur[0]) {
+          fileMissing.push([pre[1], cur[0]]);
         }
-        return pre;
+        return cur;
       },
-      [[0, 0]],
+      [0, 0],
     );
-    fileMissing.shift();
     return fileMissing;
   }
 
@@ -93,12 +129,20 @@ export class UploadService {
     );
 
     if (result) {
-      info.receive.push([Number(start), Number(end)]);
-      const isDone = this.fingureFileUploadStatus(info.receive, Number(size));
+      const receive = JSON.parse(info.receive);
+      receive.push([Number(start), Number(end)]);
+      const isDone = this.fingureFileUploadStatus(receive, Number(size));
       await this.update(info.id, {
         status: isDone.length === 0 ? 'uploaded' : 'uploading',
-        receive: info.receive,
+        receive: JSON.stringify(receive),
+        name: isDone.length === 0 ? info.name.slice(1) : info.name,
       });
+
+      // 如果文件上传完成, 则去除名字前面的~
+      if (isDone.length === 0) {
+        await this.fileService.uploadFileDone(info.name, info.directory);
+      }
+
       return isDone;
     }
     return false;

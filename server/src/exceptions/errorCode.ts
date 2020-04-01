@@ -37,9 +37,9 @@ export class ErrorCode {
     msg: '文件目录获取错误',
   };
 
-  static readonly FileHashExist: CodeMsg = {
+  static readonly FileDirExist: CodeMsg = {
     code: 20008,
-    msg: '已存在相同的文件',
+    msg: '该目录下已存在相同的文件',
   };
 
   static readonly FileSessionError: CodeMsg = {

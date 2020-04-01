@@ -7,8 +7,6 @@ import {
 } from 'typeorm';
 import { Exclude } from 'class-transformer';
 
-type ReceiveData = [number, number];
-
 @Entity()
 export class Upload {
   @PrimaryGeneratedColumn()
@@ -30,7 +28,7 @@ export class Upload {
   size: number;
 
   @Column()
-  receive: ReceiveData[];
+  receive: string;
 
   @Column()
   status: string;

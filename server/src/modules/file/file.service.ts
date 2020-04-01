@@ -23,6 +23,12 @@ export class FileService {
     return path.join(this.basePath, pathInfo);
   }
 
+  async fileExist(path1: string, path2: string): Promise<boolean> {
+    const allPath = path.join(this.basePath, path1, path2);
+    const result = await fs.existsSync(allPath);
+    return result;
+  }
+
   async isFile(filePath: string): Promise<boolean> {
     const result = await fs.statSync(filePath);
     return result.isFile();
@@ -146,7 +152,7 @@ export class FileService {
     return new Promise((resolve, reject) => {
       const fileDir = path.join(this.basePath, dir, name);
 
-      const fileStream = fs.createWriteStream(fileDir, { flags: 'as+', start });
+      const fileStream = fs.createWriteStream(fileDir, { flags: 'w+', start });
       fileStream.write(file.buffer);
       fileStream.close();
 
@@ -159,5 +165,14 @@ export class FileService {
         resolve(true);
       });
     });
+  }
+
+  async uploadFileDone(name: string, dir: string): Promise<boolean> {
+    const newName = name.slice(1);
+    const oldFilePath = path.join(this.basePath, dir, name);
+    const newFilePath = path.join(this.basePath, dir, newName);
+
+    await fs.renameSync(oldFilePath, newFilePath);
+    return true;
   }
 }

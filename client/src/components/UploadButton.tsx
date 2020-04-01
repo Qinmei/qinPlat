@@ -23,12 +23,12 @@ export const UploadButton: React.FC<PropsType> = props => {
   const beforeUploadHandler = async (fileList: RcFile[]): Promise<void> => {
     setLoading(true);
     for (const file of fileList) {
-      // const size = file.size / 1024 / 1024;
-      // if (size < 10) {
-      //   await uploadSmall(file);
-      // } else {
-      uploadBig(file);
-      // }
+      const size = file.size / 1024 / 1024;
+      if (size < 10) {
+        await uploadSmall(file);
+      } else {
+        uploadBig(file);
+      }
       confirm();
     }
     setLoading(false);
@@ -54,6 +54,7 @@ export const UploadButton: React.FC<PropsType> = props => {
         size: file.size,
       },
     });
+
     if (start) {
       uploadBigUpdate(start.uuid, fileChunkList, file.size);
     }
@@ -63,7 +64,7 @@ export const UploadButton: React.FC<PropsType> = props => {
     return new Promise((resolve, reject) => {
       setTimeout(() => {
         resolve();
-      }, 1000);
+      }, 10000);
     });
   };
 
@@ -79,12 +80,13 @@ export const UploadButton: React.FC<PropsType> = props => {
       formData.append('start', (count * 1024 * 1024 * 10).toString());
       formData.append('end', ((count + 1) * 1024 * 1024 * 10).toString());
       formData.append('size', size.toString());
-      Api.uploadBigUpdate({
+      await Api.uploadBigUpdate({
         params: {
           id: uuid,
         },
         formData,
       });
+      await sleep();
       count++;
     }
   };

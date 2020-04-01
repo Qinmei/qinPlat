@@ -208,6 +208,11 @@ const Files: React.FC<PropType> = props => {
             {intl.get('files.btn.new.folder')}
           </Button>
 
+          <Button onClick={getFileList}>
+            <RedoOutlined />
+            {intl.get('files.btn.refresh.folder')}
+          </Button>
+
           {select.length > 0 && (
             <span className="divider">
               <Button onClick={() => batchChange('copy')}>
@@ -225,13 +230,6 @@ const Files: React.FC<PropType> = props => {
             </span>
           )}
         </div>
-        {/* <Button
-          style={{ float: 'right', marginRight: '0' }}
-          onClick={getFileList}
-        >
-          <RedoOutlined />
-          {intl.get('files.btn.refresh.folder')}
-        </Button> */}
 
         <Input.Search
           placeholder={intl.get('files.table.search.tips')}

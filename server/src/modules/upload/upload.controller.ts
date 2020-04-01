@@ -35,10 +35,20 @@ export class UploadController {
   @Post('/createSession')
   @NoAuth(true)
   async createBigFile(@Body() data: CreateDto) {
+    const file = await this.uploadService.existUploadedFile(
+      data.directory,
+      data.name,
+    );
+
+    if (file) {
+      throw new BusinessException(ErrorCode.FileDirExist);
+    }
+
     const exist = await this.uploadService.existFileHash(data.hash);
     if (exist) {
-      throw new BusinessException(ErrorCode.FileHashExist);
+      return exist;
     }
+
     return await this.uploadService.createBigFile(data);
   }
 
