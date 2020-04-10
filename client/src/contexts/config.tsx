@@ -1,12 +1,23 @@
 import React, { createContext, useReducer } from 'react';
+import { Api } from '../services';
+import { UploadMethods } from './uploadMethods';
 
 interface PropsType {
   children?: React.ReactNode;
 }
 
-interface DataType {
+export type File = { start: number; end: number; file: Blob } | null;
+
+type Task = {
+  id: string;
+  controller: AbortController;
+  file: File[];
+};
+
+export interface DataType {
   color: string;
-  isLogin: boolean;
+  uploadLimit: number;
+  task: Task[];
 }
 
 const reducer = (state: DataType, action: DataType) => {
@@ -18,20 +29,16 @@ const reducer = (state: DataType, action: DataType) => {
 
 const initData: DataType = {
   color: '#1DA57A',
-  isLogin: false,
+  uploadLimit: 3,
+  task: [],
 };
 
 interface ContextProps {
   state: DataType;
-  dispatch: React.Dispatch<DataType>;
+  methods: UploadMethods;
 }
 
-const contextValue: ContextProps = {
-  state: initData,
-  dispatch: () => {},
-};
-
-const ConfigContext = createContext(contextValue);
+const ConfigContext = createContext({} as ContextProps);
 
 const CustomConfigProvider = (props: PropsType) => {
   const { children } = props;
@@ -39,7 +46,7 @@ const CustomConfigProvider = (props: PropsType) => {
 
   const contextValue = {
     state,
-    dispatch,
+    methods: new UploadMethods(state, dispatch),
   };
 
   return (

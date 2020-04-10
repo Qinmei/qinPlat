@@ -18,7 +18,7 @@ export const treeTransfer = (
   parentKey: string = '',
 ) => {
   let result: any[] = [];
-  result = data.map(item => {
+  result = data.map((item) => {
     const key = (parentKey ? parentKey + '/' : '') + item.name;
     if (item.children.length > 0) {
       item.children = treeTransfer(item.children, icon, key);
@@ -32,4 +32,10 @@ export const treeTransfer = (
     };
   });
   return result;
+};
+
+export const processTransfer = (data: string, total: number) => {
+  const dataArr: [number, number][] = JSON.parse(data);
+  const progress = dataArr.reduce((prev, cur) => cur[1] - cur[0] + prev, 0);
+  return Math.ceil((progress / total) * 100);
 };

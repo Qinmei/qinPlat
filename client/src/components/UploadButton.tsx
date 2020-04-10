@@ -1,19 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { Upload, message, Button } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
 import * as intl from 'react-intl-universal';
 import { Api } from '../services';
 import { RcFile } from 'antd/lib/upload/interface';
+import { ConfigContext } from '../contexts/config';
 
 interface PropsType {
   confirm: () => void;
   dir: string;
 }
 
-export const UploadButton: React.FC<PropsType> = props => {
+type File = { start: number; end: number; file: Blob } | null;
+
+export const UploadButton: React.FC<PropsType> = (props) => {
   const { confirm, dir } = props;
 
   const [loading, setLoading] = useState<boolean>(false);
+  const { state, methods } = useContext(ConfigContext);
 
   const beforeUpload = (file: RcFile, fileList: RcFile[]) => {
     beforeUploadHandler(fileList);
@@ -55,58 +59,43 @@ export const UploadButton: React.FC<PropsType> = props => {
       },
     });
 
+    console.log('start', start);
+
     if (start) {
-      uploadBigUpdate(start.uuid, fileChunkList, file.size);
-    }
-  };
-
-  const sleep = async () => {
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        resolve();
-      }, 10000);
-    });
-  };
-
-  const uploadBigUpdate = async (
-    uuid: string,
-    fileChunkList: Blob[],
-    size: number,
-  ) => {
-    let count = 0;
-    for (const ele of fileChunkList) {
-      const formData = new FormData();
-      formData.append('file', ele);
-      formData.append('start', (count * 1024 * 1024 * 10).toString());
-      formData.append('end', ((count + 1) * 1024 * 1024 * 10).toString());
-      formData.append('size', size.toString());
-      await Api.uploadBigUpdate({
-        params: {
-          id: uuid,
-        },
-        formData,
-      });
-      await sleep();
-      count++;
+      console.log(start);
+      const receive: [number, number][] = JSON.parse(start.receive);
+      const newFileChunkList = fileChunkList.filter(
+        (item) =>
+          !receive.some(
+            (ele) => item && item.start >= ele[0] && item.end <= ele[1],
+          ),
+      );
+      console.log('newFileChunkList', newFileChunkList);
+      methods.createUpload(start.id, newFileChunkList, file.size);
     }
   };
 
   const createFileChunk = (file: RcFile) => {
     const size = 1024 * 1024 * 10;
-    const fileChunkList = [];
+    const fileChunkList: File[] = [];
     let cur = 0;
     while (cur < file.size) {
-      fileChunkList.push(file.slice(cur, cur + size));
+      fileChunkList.push({
+        start: cur,
+        end: Math.min(cur + size, file.size),
+        file: file.slice(cur, cur + size),
+      });
       cur += size;
     }
+
     return fileChunkList;
   };
 
   const calculateHash = (fileChunkList: any[]) => {
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       const worker = new Worker('/hash.js');
       worker.postMessage({ fileChunkList });
-      worker.onmessage = e => {
+      worker.onmessage = (e) => {
         const { hash } = e.data;
         if (hash) {
           resolve(hash);

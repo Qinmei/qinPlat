@@ -15,6 +15,6 @@ export class QueryDto {
   @IsIn(['DESC', 'ASC'])
   readonly sortOrder: string = 'DESC';
 
-  @IsIn(['id'])
+  @IsIn(['id', 'updatedAt'])
   readonly sortBy: string = 'id';
 }

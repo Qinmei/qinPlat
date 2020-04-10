@@ -24,7 +24,7 @@ export class Api {
   static readonly apiPrefix: string = 'http://localhost:7000/api/v1';
 
   static async request(methods: HttpMethods, url: HttpUrl, options?: any) {
-    const { params, query, data, formData } = options;
+    const { params, query, data, formData, ...props } = options;
 
     let defaultHeader: any = {
       Accept: 'application/json',
@@ -35,12 +35,12 @@ export class Api {
     if (params) {
       link = link.replace(
         /\/:(\w+)/gm,
-        index => `/${params[`${index.replace(/\/:/g, '')}`]}`,
+        (index) => `/${params[`${index.replace(/\/:/g, '')}`]}`,
       );
     }
 
     if (query) {
-      Object.keys(query).map(item => {
+      Object.keys(query).map((item) => {
         if (!query[item] && query[item] !== 0) delete query[item];
       });
 
@@ -58,9 +58,9 @@ export class Api {
         Authorization: sessionStorage.getItem('token') || '',
       },
       method: methods,
+      ...props,
     })
-      .then(res => {
-        console.log(res);
+      .then((res) => {
         if (res.status === 200 || res.status === 201) {
         } else if (res.status === 401) {
           sessionStorage.clear();
@@ -71,8 +71,8 @@ export class Api {
         }
         return res;
       })
-      .then(res => res.json())
-      .then(res => {
+      .then((res) => res.json())
+      .then((res) => {
         if (res.code) {
           message.error(res.msg);
         } else {

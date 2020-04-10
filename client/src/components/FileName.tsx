@@ -34,14 +34,14 @@ const Wrapper = styled.div`
       }
 
       &.active:hover {
-        color: ${props => props.color};
+        color: ${(props) => props.color};
       }
     }
 
     .icon {
       margin-left: 12px;
       font-size: 16px;
-      color: ${props => props.color};
+      color: ${(props) => props.color};
       cursor: pointer;
     }
   }
@@ -56,7 +56,7 @@ const Wrapper = styled.div`
       display: none;
       margin-right: 12px;
       font-size: 18px;
-      color: ${props => props.color};
+      color: ${(props) => props.color};
       cursor: pointer;
 
       &.delete {

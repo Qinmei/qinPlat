@@ -18,11 +18,7 @@ export class GlobalExceptionsFilter implements ExceptionFilter {
         ? exception.getStatus()
         : HttpStatus.BAD_REQUEST;
     const message =
-      exception instanceof HttpException
-        ? exception.message.message
-        : 'Unknown Error';
-
-    console.log(exception);
+      exception instanceof HttpException ? exception.message : 'Unknown Error';
 
     response.status(status).json({
       errorCode: status,

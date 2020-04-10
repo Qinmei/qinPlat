@@ -4,7 +4,6 @@ import { Repository } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 import { Upload } from './upload.entity';
 import { FileService } from '../file/file.service';
-import { Config } from '../../config';
 import { QueryDto, CreateDto } from './dto';
 import { UploadData } from './interfaces';
 
@@ -32,8 +31,8 @@ export class UploadService {
     };
   }
 
-  async find(uuid: string): Promise<Upload | undefined> {
-    return await this.uploadRepository.findOne({ uuid });
+  async find(id: string): Promise<Upload | undefined> {
+    return await this.uploadRepository.findOne(id);
   }
 
   async create(files: any, dir: string): Promise<any | undefined> {
@@ -118,9 +117,18 @@ export class UploadService {
     return fileMissing;
   }
 
-  async uploadBigFile(data: UploadData): Promise<any | undefined> {
+  async uploadBigFile(data: UploadData): Promise<any | boolean> {
     const { uuid, start, end, file, size } = data;
     const info = await this.find(uuid);
+    const fileCent = [Number(start), Number(end)];
+
+    const receive = JSON.parse(info.receive);
+    if (
+      receive.some(item => item[0] <= fileCent[0] && item[1] >= fileCent[1])
+    ) {
+      return receive;
+    }
+
     const result = await this.fileService.updateFile(
       file,
       info.name,
@@ -129,8 +137,7 @@ export class UploadService {
     );
 
     if (result) {
-      const receive = JSON.parse(info.receive);
-      receive.push([Number(start), Number(end)]);
+      receive.push(fileCent);
       const isDone = this.fingureFileUploadStatus(receive, Number(size));
       await this.update(info.id, {
         status: isDone.length === 0 ? 'uploaded' : 'uploading',
@@ -145,11 +152,15 @@ export class UploadService {
 
       return isDone;
     }
-    return false;
+    return true;
   }
 
   async update(id: number, data: Partial<Upload>): Promise<any | undefined> {
     return await this.uploadRepository.update(id, data);
+  }
+
+  async remove(ids: string[]): Promise<any | undefined> {
+    return await this.uploadRepository.delete(ids);
   }
 
   async clear(): Promise<any | undefined> {

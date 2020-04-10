@@ -11,13 +11,17 @@ import {
 } from '@nestjs/common';
 import { AnyFilesInterceptor, FileInterceptor } from '@nestjs/platform-express';
 import { UploadService } from './upload.service';
-import { CreateDto, QueryDto, UploadDto } from './dto';
+import { CreateDto, QueryDto } from './dto';
 import { NoAuth } from '../../decorators';
 import { BusinessException, ErrorCode } from '../../exceptions';
+import { UploadGateway } from './upload.gateway';
 
 @Controller('upload')
 export class UploadController {
-  constructor(private readonly uploadService: UploadService) {}
+  constructor(
+    private readonly uploadService: UploadService,
+    private readonly uploadGateway: UploadGateway,
+  ) {}
 
   @Get()
   @NoAuth(true)
@@ -49,7 +53,9 @@ export class UploadController {
       return exist;
     }
 
-    return await this.uploadService.createBigFile(data);
+    const result = await this.uploadService.createBigFile(data);
+    this.uploadGateway.inList();
+    return result;
   }
 
   @Post('/:id')
@@ -61,14 +67,17 @@ export class UploadController {
     @Body() data,
   ) {
     const info = await this.uploadService.find(params.id);
+
     if (!info) {
       throw new BusinessException(ErrorCode.FileSessionError);
     }
-    return await this.uploadService.uploadBigFile({
+    const result = await this.uploadService.uploadBigFile({
       uuid: params.id,
       file,
       ...data,
     });
+    this.uploadGateway.inList();
+    return result;
   }
 
   @Get('/:id')
