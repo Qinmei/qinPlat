@@ -57,6 +57,8 @@ export default {
   'upload.header.status.title.connect': '连接',
   'upload.header.status.title.disconnect': '断开',
   'upload.header.status.title.refresh': '刷新',
+  'upload.header.delete.batch': '删除',
+  'upload.header.delete.all': '全部删除',
   'upload.table.title.name': '文件名',
   'upload.table.title.size': '大小',
   'upload.table.title.processing': '进度',

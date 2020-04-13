@@ -6,6 +6,9 @@ import {
   ApiOutlined,
   NodeIndexOutlined,
   CaretRightOutlined,
+  DeleteOutlined,
+  PlayCircleFilled,
+  PauseCircleFilled,
   DeleteFilled,
 } from '@ant-design/icons';
 import styled from 'styled-components';
@@ -101,6 +104,8 @@ const UploadPage: React.FC<PropType> = (props) => {
   const socket = useRef<SocketIOClient.Socket>();
   const { state, methods: globalMethods } = useContext(ConfigContext);
 
+  const { task } = state;
+
   const [status, setStatus] = useState<Status>(Status.Processing);
   const [query, setQuery] = useState<Query>({
     page: 1,
@@ -112,6 +117,7 @@ const UploadPage: React.FC<PropType> = (props) => {
     list: [],
     total: 0,
   });
+  const [select, setSelect] = useState<React.ReactText[]>([]);
 
   const methods = {
     getList() {
@@ -126,8 +132,9 @@ const UploadPage: React.FC<PropType> = (props) => {
       socket.current?.close();
     },
 
-    remove(id: string) {
-      socket.current?.emit('upload/delete', [id]);
+    remove(ids: React.ReactText[]) {
+      socket.current?.emit('upload/delete', ids);
+      setSelect([]);
     },
   };
 
@@ -144,7 +151,6 @@ const UploadPage: React.FC<PropType> = (props) => {
     });
 
     socket.current?.on('list', (data: Source) => {
-      console.log(data);
       setData(data);
     });
 
@@ -158,6 +164,26 @@ const UploadPage: React.FC<PropType> = (props) => {
 
     return methods.disconnect;
   }, []);
+
+  const getStatus = (percent: number, id: number) => {
+    const task = globalMethods.getFileStatus(id);
+
+    let status:
+      | 'active'
+      | 'exception'
+      | 'normal'
+      | 'success'
+      | undefined = undefined;
+    if (percent < 100) {
+      if (task.exist) {
+        status = task.upload ? 'active' : undefined;
+      } else {
+        status = 'exception';
+      }
+    }
+
+    return status;
+  };
 
   const columns: ColumnProps<List>[] = [
     {
@@ -176,7 +202,10 @@ const UploadPage: React.FC<PropType> = (props) => {
       align: 'center',
       width: 400,
       render: (val, record) => (
-        <Progress percent={processTransfer(val, record.size)} status="active" />
+        <Progress
+          percent={processTransfer(val, record.size)}
+          status={getStatus(processTransfer(val, record.size), record.id)}
+        />
       ),
     },
     {
@@ -194,15 +223,20 @@ const UploadPage: React.FC<PropType> = (props) => {
     {
       title: intl.get('upload.table.title.option'),
       key: 'id',
+      dataIndex: 'id',
       align: 'center',
       render: (val, record) => (
         <div>
-          {record.status === 'uploading' && (
-            <Button type="link" onClick={() => globalMethods.stopUpload(val)}>
-              <CaretRightOutlined style={{ fontSize: 18 }} />
+          {globalMethods.getFileStatus(val).exist && (
+            <Button type="link" onClick={() => globalMethods.toggleUpload(val)}>
+              {globalMethods.getFileStatus(val).upload ? (
+                <PauseCircleFilled style={{ fontSize: 18 }} />
+              ) : (
+                <PlayCircleFilled style={{ fontSize: 18 }} />
+              )}
             </Button>
           )}
-          <Button type="link" onClick={() => methods.remove(val)}>
+          <Button type="link" onClick={() => methods.remove([val])}>
             <DeleteFilled style={{ fontSize: 18 }} />
           </Button>
         </div>
@@ -235,6 +269,13 @@ const UploadPage: React.FC<PropType> = (props) => {
             <RedoOutlined />
             {intl.get('upload.header.status.title.refresh')}
           </Button>
+
+          {select.length > 0 && (
+            <Button danger onClick={() => methods.remove(select)}>
+              <DeleteOutlined />
+              {intl.get('upload.header.delete.batch')}
+            </Button>
+          )}
         </div>
 
         <div className="right">
@@ -249,7 +290,17 @@ const UploadPage: React.FC<PropType> = (props) => {
       </div>
 
       <div className="content">
-        <Table dataSource={data.list} columns={columns} size="small"></Table>
+        <Table
+          rowKey="id"
+          dataSource={data.list}
+          columns={columns}
+          size="small"
+          rowSelection={{
+            columnWidth: 68,
+            selectedRowKeys: select,
+            onChange: (value: React.ReactText[]) => setSelect(value),
+          }}
+        ></Table>
       </div>
     </Wrapper>
   );

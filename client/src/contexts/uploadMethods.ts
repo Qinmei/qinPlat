@@ -12,21 +12,16 @@ export class UploadMethods {
     });
   };
 
-  createUpload = async (id: string, fileChunkList: File[], size: number) => {
-    const { task } = this.state;
-
-    const controller = new AbortController();
-    const signal = controller.signal;
-
-    task.push({
-      id,
-      file: fileChunkList,
-      controller,
-    });
-
+  uploadProgress = async (
+    id: number,
+    fileChunkList: File[],
+    signal: AbortSignal,
+    size: number,
+  ) => {
+    let { task } = this.state;
     for (const index in fileChunkList) {
       const ele = fileChunkList[index];
-      if (!ele) return;
+      if (!ele) continue;
 
       const formData = new FormData();
       formData.append('file', ele.file);
@@ -39,23 +34,73 @@ export class UploadMethods {
         },
         formData,
         signal,
+      }).catch((err) => {
+        return;
       });
 
       if (result) {
         fileChunkList[index] = null;
+      } else {
+        return;
+      }
+
+      const uploaded = fileChunkList.every((item) => !item);
+
+      if (uploaded) {
+        task = task.filter((item) => item.id !== id);
       }
 
       this.dispatch({
         task,
       });
-
-      await this.sleep(10000);
     }
   };
 
-  stopUpload = async (id: string) => {
+  createUpload = async (id: number, fileChunkList: File[], size: number) => {
+    const { task } = this.state;
+
+    const controller = new AbortController();
+    const signal = controller.signal;
+
+    task.push({
+      id,
+      file: fileChunkList,
+      controller,
+      size,
+      upload: true,
+    });
+
+    this.uploadProgress(id, fileChunkList, signal, size);
+  };
+
+  toggleUpload = async (id: number) => {
+    let { task } = this.state;
+    const ele = task.find((item) => item.id === id);
+    if (ele) {
+      if (ele.upload) {
+        ele.controller.abort();
+        ele.upload = false;
+      } else {
+        const controller = new AbortController();
+        const signal = controller.signal;
+
+        ele.upload = true;
+        ele.controller = controller;
+        this.uploadProgress(ele.id, ele.file, signal, ele.size);
+      }
+      this.dispatch({
+        task,
+      });
+    }
+  };
+
+  getFileStatus = (id: number) => {
     const { task } = this.state;
     const ele = task.find((item) => item.id === id);
-    ele && ele.controller.abort();
+
+    return {
+      exist: !!ele,
+      upload: ele?.upload,
+    };
   };
 }

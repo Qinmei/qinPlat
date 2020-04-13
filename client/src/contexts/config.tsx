@@ -9,14 +9,16 @@ interface PropsType {
 export type File = { start: number; end: number; file: Blob } | null;
 
 type Task = {
-  id: string;
+  id: number;
   controller: AbortController;
   file: File[];
+  upload: boolean;
+  size: number;
 };
 
 export interface DataType {
   color: string;
-  uploadLimit: number;
+  uploadSize: number;
   task: Task[];
 }
 
@@ -29,7 +31,7 @@ const reducer = (state: DataType, action: DataType) => {
 
 const initData: DataType = {
   color: '#1DA57A',
-  uploadLimit: 3,
+  uploadSize: 1,
   task: [],
 };
 

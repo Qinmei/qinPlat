@@ -59,10 +59,7 @@ export const UploadButton: React.FC<PropsType> = (props) => {
       },
     });
 
-    console.log('start', start);
-
     if (start) {
-      console.log(start);
       const receive: [number, number][] = JSON.parse(start.receive);
       const newFileChunkList = fileChunkList.filter(
         (item) =>
@@ -70,13 +67,12 @@ export const UploadButton: React.FC<PropsType> = (props) => {
             (ele) => item && item.start >= ele[0] && item.end <= ele[1],
           ),
       );
-      console.log('newFileChunkList', newFileChunkList);
       methods.createUpload(start.id, newFileChunkList, file.size);
     }
   };
 
   const createFileChunk = (file: RcFile) => {
-    const size = 1024 * 1024 * 10;
+    const size = 1024 * 1024 * state.uploadSize;
     const fileChunkList: File[] = [];
     let cur = 0;
     while (cur < file.size) {

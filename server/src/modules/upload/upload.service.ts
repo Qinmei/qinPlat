@@ -160,7 +160,18 @@ export class UploadService {
   }
 
   async remove(ids: string[]): Promise<any | undefined> {
-    return await this.uploadRepository.delete(ids);
+    const uploadingList = await this.uploadRepository
+      .createQueryBuilder('upload')
+      .where('upload.id IN (:...ids)', { ids })
+      .where('upload.status = :status', { status: 'uploading' })
+      .getMany();
+
+    await this.uploadRepository.delete(ids);
+    try {
+      await this.fileService.clearUploadingFile(uploadingList);
+    } catch (error) {}
+
+    return true;
   }
 
   async clear(): Promise<any | undefined> {

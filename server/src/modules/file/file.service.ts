@@ -4,6 +4,7 @@ import { Injectable } from '@nestjs/common';
 import * as rimraf from 'rimraf';
 import { Config } from '../../config';
 import { FileItem, ParamsData, RenameData, DirTree } from './interfaces';
+import { Upload } from '../upload/upload.entity';
 
 @Injectable()
 export class FileService {
@@ -152,7 +153,7 @@ export class FileService {
     return new Promise((resolve, reject) => {
       const fileDir = path.join(this.basePath, dir, name);
 
-      const fileStream = fs.createWriteStream(fileDir, { flags: 'w+', start });
+      const fileStream = fs.createWriteStream(fileDir, { flags: 'a+', start });
       fileStream.write(file.buffer);
       fileStream.close();
 
@@ -174,5 +175,10 @@ export class FileService {
 
     await fs.renameSync(oldFilePath, newFilePath);
     return true;
+  }
+
+  async clearUploadingFile(data: Upload[]): Promise<boolean> {
+    const filePathArr = data.map(item => path.join(item.directory, item.name));
+    return await this.remove(filePathArr);
   }
 }
