@@ -7,6 +7,7 @@ import * as locales from './locales';
 import { NavHeader } from './components';
 import { Login, Logs, Setting, Files, UploadPage } from './pages';
 import { Auth } from './layouts';
+import './assets/common.less';
 
 const { Header, Content } = Layout;
 
@@ -15,7 +16,7 @@ intl.init({
   locales,
 });
 
-const App: React.FC<{}> = props => {
+const App: React.FC<{}> = (props) => {
   return (
     <CustomConfigProvider>
       <ConfigProvider locale={locales.antd_zh_CN}>

@@ -13,7 +13,7 @@ const Wrapper = styled.div`
   margin: 60px auto;
 `;
 
-const Login: React.FC<PropType> = props => {
+const Login: React.FC<PropType> = (props) => {
   const history = useHistory();
   const layout = {
     labelCol: { span: 4 },
@@ -30,11 +30,11 @@ const Login: React.FC<PropType> = props => {
         username,
         password: md5(password),
       },
-    }).then(res => {
+    }).then((res) => {
       if (res) {
         const { token } = res;
         sessionStorage.setItem('token', token);
-        history.push('/upload');
+        history.push('/files');
       }
     });
   };

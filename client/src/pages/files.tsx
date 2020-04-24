@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import intl from 'react-intl-universal';
-import { Button, Table, Input } from 'antd';
+import { Button, Table, Input, Spin, Checkbox } from 'antd';
 import {
   UploadOutlined,
   FolderAddOutlined,
@@ -10,7 +10,6 @@ import {
   RedoOutlined,
 } from '@ant-design/icons';
 import styled from 'styled-components';
-import { ColumnProps } from 'antd/es/table';
 import moment from 'moment';
 import {
   BreadTabs,
@@ -21,6 +20,7 @@ import {
   UploadButton,
 } from '../components';
 import { sizeTransfer } from '../utils';
+import { CheckboxValueType } from 'antd/lib/checkbox/Group';
 
 interface PropType {}
 
@@ -35,6 +35,7 @@ interface List {
 type FilesData = { oldPath: string; newPath: string }[];
 
 const Wrapper = styled.div`
+  height: 100%;
   user-select: none;
   .header {
     display: flex;
@@ -53,6 +54,7 @@ const Wrapper = styled.div`
   }
 
   .content {
+    height: calc(100% - 40px);
     .tableInfo {
       margin-top: 10px;
       display: flex;
@@ -68,21 +70,67 @@ const Wrapper = styled.div`
     }
 
     .tableMain {
-      margin-left: -24px;
-      margin-right: -24px;
+      height: calc(100vh - 270px);
+      position: relative;
+      margin: 0 -24px;
+
       .ant-table.ant-table-small thead > tr > th {
         background-color: transparent;
+      }
+
+      .tableBody {
+        height: calc(100% - 40px);
+        overflow-y: auto;
+
+        .ant-checkbox-group {
+          width: 100%;
+        }
+      }
+
+      .list {
+        height: 40px;
+        line-height: 40px;
+        width: calc(100%);
+        display: grid;
+        grid-template-columns: 60px 2fr 1fr 1fr;
+        border-bottom: solid 1px rgba(0, 0, 0, 0.03);
+
+        &.body:hover {
+          background-color: rgba(0, 0, 0, 0.03);
+        }
+
+        &.dragover {
+          background-color: rgba(29, 165, 122, 0.2);
+          border: solid 1px rgba(29, 165, 122, 0.7);
+        }
+
+        .check {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+        }
+        .name {
+        }
+
+        .size {
+          text-align: center;
+        }
+
+        .time {
+          text-align: center;
+        }
       }
     }
   }
 `;
 
-const Files: React.FC<PropType> = props => {
+const Files: React.FC<PropType> = (props) => {
   const [dir, setDir] = useState<string>('');
   const [title, setTitle] = useState<string>('');
   const [data, setData] = useState<List[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
-  const [select, setSelect] = useState<React.ReactText[]>([]);
+  const [select, setSelect] = useState<CheckboxValueType[]>([]);
+  const [dragOver, setDragOver] = useState<string>('');
 
   const allDirRef = useRef<RefAll>(null);
 
@@ -99,9 +147,12 @@ const Files: React.FC<PropType> = props => {
     setData([newItem, ...data]);
   };
 
-  const singleClick = (value: string) => {
+  const singleClick = (
+    e: React.MouseEvent<HTMLDivElement, MouseEvent>,
+    value: string,
+  ) => {
     if (select.includes(value)) {
-      const newSelect = select.filter(item => item !== value);
+      const newSelect = select.filter((item) => item !== value);
       setSelect(newSelect);
     } else {
       setSelect([...select, value]);
@@ -143,7 +194,7 @@ const Files: React.FC<PropType> = props => {
   };
 
   const batchChange = (type: string) => {
-    const newFiles = select.map(item => (dir ? dir + '/' : '') + item);
+    const newFiles = select.map((item) => (dir ? dir + '/' : '') + item);
     if (type === 'delete') {
       methods.delete(newFiles, getFileList);
     } else if (type === 'move' || type === 'copy') {
@@ -156,45 +207,43 @@ const Files: React.FC<PropType> = props => {
     getFileList();
   };
 
+  const checkAll = () => {
+    setSelect(
+      select.length === data.length ? [] : data.map((item) => item.name),
+    );
+  };
+
+  const dragEvent = {
+    start: (e: React.DragEvent<HTMLDivElement>, value: string) => {},
+    over: (e: React.DragEvent<HTMLDivElement>, value: string) => {
+      console.log('dragover');
+      setDragOver(value);
+    },
+    end: async (e: React.DragEvent<HTMLDivElement>, value: string) => {
+      console.log('dragend');
+      if (dragOver) {
+        const oldPath = (dir ? dir + '/' : '') + value;
+        const newPath = (dir ? dir + '/' : '') + dragOver + '/' + value;
+        await methods.copyOrMove('move', [
+          {
+            oldPath,
+            newPath,
+          },
+        ]);
+        getFileList();
+      }
+      setDragOver('');
+    },
+  };
+
   useEffect(() => {
     getFileList();
     setTitle('');
   }, [dir]);
 
-  const columns: ColumnProps<List>[] = [
-    {
-      title: intl.get('files.table.name'),
-      dataIndex: 'name',
-      width: 1000,
-      sorter: (a, b) => a.name.localeCompare(b.name),
-      render: (val, record) => (
-        <Filename
-          type={record.type}
-          name={val}
-          onChange={singleChange}
-          add={record.add}
-        ></Filename>
-      ),
-    },
-    {
-      title: intl.get('files.table.size'),
-      dataIndex: 'size',
-      width: 300,
-      sorter: (a, b) => a.size - b.size,
-      render: (val, record) => sizeTransfer(record.type === 'folder' ? 0 : val),
-    },
-    {
-      title: intl.get('files.table.time'),
-      dataIndex: 'mtimeMs',
-      width: 400,
-      render: val => moment(val).format('YYYY-MM-DD HH:mm:ss'),
-      sorter: (a, b) => a.mtimeMs - b.mtimeMs,
-    },
-  ];
-
-  const filterFile = (data: List[]) => {
+  const filterFile = (data: List[]): List[] => {
     const pattern = new RegExp(title);
-    return data.filter(item => pattern.test(item.name));
+    return data.filter((item) => pattern.test(item.name));
   };
 
   return (
@@ -234,7 +283,7 @@ const Files: React.FC<PropType> = props => {
         <Input.Search
           placeholder={intl.get('files.table.search.tips')}
           style={{ width: '280px', float: 'right' }}
-          onSearch={value => setTitle(value)}
+          onSearch={(value) => setTitle(value)}
         />
       </div>
       <div className="content">
@@ -242,8 +291,68 @@ const Files: React.FC<PropType> = props => {
           <BreadTabs dir={dir} setDir={setDir}></BreadTabs>
           <span>{intl.get('common.total', { total: data.length })}</span>
         </div>
-        <div className="tableMain">
-          <Table
+
+        <Spin spinning={loading}>
+          <div className="tableMain">
+            <div className="tableHeader">
+              <div className="list header">
+                <div className="check">
+                  <Checkbox
+                    indeterminate={
+                      !!select.length && select.length < data.length
+                    }
+                    onChange={checkAll}
+                    checked={!!select.length && select.length === data.length}
+                  ></Checkbox>
+                </div>
+                <div className="name">{intl.get('files.table.name')}</div>
+                <div className="size">{intl.get('files.table.size')}</div>
+                <div className="time">{intl.get('files.table.time')}</div>
+              </div>
+            </div>
+
+            <div className="tableBody">
+              <Checkbox.Group
+                value={select}
+                onChange={(value: CheckboxValueType[]) => setSelect(value)}
+              >
+                {filterFile(data).map((item) => (
+                  <div
+                    key={item.name}
+                    className={`list body ${
+                      item.type === 'folder' && dragOver === item.name
+                        ? 'dragover'
+                        : ''
+                    }`}
+                    onClick={(e) => singleClick(e, item.name)}
+                    draggable
+                    onDragOver={(e) => dragEvent.over(e, item.name)}
+                    onDragStart={(e) => dragEvent.start(e, item.name)}
+                    onDragEnd={(e) => dragEvent.end(e, item.name)}
+                  >
+                    <div className="check">
+                      <Checkbox value={item.name}></Checkbox>
+                    </div>
+                    <div className="name">
+                      <Filename
+                        type={item.type}
+                        name={item.name}
+                        onChange={singleChange}
+                        add={item.add}
+                      ></Filename>
+                    </div>
+                    <div className="size">
+                      {sizeTransfer(item.type === 'folder' ? 0 : item.size)}
+                    </div>
+                    <div className="time">
+                      {moment(item.mtimeMs).format('YYYY-MM-DD HH:mm:ss')}
+                    </div>
+                  </div>
+                ))}
+              </Checkbox.Group>
+            </div>
+
+            {/* <Table
             rowKey="name"
             size="small"
             dataSource={filterFile(data)}
@@ -253,15 +362,16 @@ const Files: React.FC<PropType> = props => {
             rowSelection={{
               columnWidth: 68,
               selectedRowKeys: select,
-              onChange: (value: React.ReactText[]) => setSelect(value),
+              onChange: (value: string[]) => setSelect(value),
             }}
             onRow={record => {
               return {
                 onClick: event => singleClick(record.name),
               };
             }}
-          ></Table>
-        </div>
+          ></Table> */}
+          </div>
+        </Spin>
       </div>
       <FileDirAll ref={allDirRef} submit={submit}></FileDirAll>
     </Wrapper>
