@@ -216,11 +216,9 @@ const Files: React.FC<PropType> = (props) => {
   const dragEvent = {
     start: (e: React.DragEvent<HTMLDivElement>, value: string) => {},
     over: (e: React.DragEvent<HTMLDivElement>, value: string) => {
-      console.log('dragover');
       setDragOver(value);
     },
     end: async (e: React.DragEvent<HTMLDivElement>, value: string) => {
-      console.log('dragend');
       if (dragOver) {
         const oldPath = (dir ? dir + '/' : '') + value;
         const newPath = (dir ? dir + '/' : '') + dragOver + '/' + value;
@@ -326,8 +324,10 @@ const Files: React.FC<PropType> = (props) => {
                     }`}
                     onClick={(e) => singleClick(e, item.name)}
                     draggable
-                    onDragOver={(e) => dragEvent.over(e, item.name)}
                     onDragStart={(e) => dragEvent.start(e, item.name)}
+                    onDragOver={(e) =>
+                      dragEvent.over(e, item.type === 'folder' ? item.name : '')
+                    }
                     onDragEnd={(e) => dragEvent.end(e, item.name)}
                   >
                     <div className="check">
