@@ -83,10 +83,11 @@ type PropsType = {
   name: string;
   add?: boolean;
   onChange: (name: string, type: string, newName?: string) => void;
+  disabled: boolean;
 };
 
 export const Filename = (props: PropsType) => {
-  const { type, name, onChange, add = false } = props;
+  const { type, name, onChange, add = false, disabled } = props;
 
   const [edit, setEdit] = useState<boolean>(add);
   const [title, setTitle] = useState<string>(name);
@@ -104,6 +105,7 @@ export const Filename = (props: PropsType) => {
   const submit = () => {
     if (add) {
       onChange(title, 'add');
+      setEdit(false);
     } else {
       onChange(name, 'rename', title);
     }
@@ -151,6 +153,7 @@ export const Filename = (props: PropsType) => {
       overlay={menu}
       trigger={['contextMenu']}
       onVisibleChange={(value: boolean) => setShow(value)}
+      disabled={disabled}
     >
       <Wrapper color={color} onClick={preventDefault} show={show}>
         <div className="left">

@@ -21,6 +21,8 @@ import {
 } from '../components';
 import { sizeTransfer } from '../utils';
 import { CheckboxValueType } from 'antd/lib/checkbox/Group';
+import MouseArea from '../components/MouseArea';
+import DropdownArea from '../components/DropdownArea';
 
 interface PropType {}
 
@@ -78,15 +80,6 @@ const Wrapper = styled.div`
         background-color: transparent;
       }
 
-      .tableBody {
-        height: calc(100% - 40px);
-        overflow-y: auto;
-
-        .ant-checkbox-group {
-          width: 100%;
-        }
-      }
-
       .list {
         height: 40px;
         line-height: 40px;
@@ -96,11 +89,14 @@ const Wrapper = styled.div`
         border-bottom: solid 1px rgba(0, 0, 0, 0.03);
 
         &.body:hover {
-          background-color: rgba(0, 0, 0, 0.03);
+          background-color: rgba(29, 165, 122, 0.1);
+        }
+
+        &.active {
+          background-color: rgba(29, 165, 122, 0.1);
         }
 
         &.dragover {
-          background-color: rgba(29, 165, 122, 0.2);
           border: solid 1px rgba(29, 165, 122, 0.7);
         }
 
@@ -125,12 +121,13 @@ const Wrapper = styled.div`
 `;
 
 const Files: React.FC<PropType> = (props) => {
-  const [dir, setDir] = useState<string>('');
+  const [dir, setDir] = useState<string>('/');
   const [title, setTitle] = useState<string>('');
   const [data, setData] = useState<List[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [select, setSelect] = useState<CheckboxValueType[]>([]);
   const [dragOver, setDragOver] = useState<string>('');
+  const [dragStart, setDragStart] = useState<string>('');
 
   const allDirRef = useRef<RefAll>(null);
 
@@ -157,12 +154,14 @@ const Files: React.FC<PropType> = (props) => {
     } else {
       setSelect([...select, value]);
     }
+    e.stopPropagation();
+    e.preventDefault();
   };
 
   const getFileList = async () => {
     setSelect([]);
     setLoading(true);
-    const res: List[] = await methods.list(dir);
+    const res: List[] = await methods.list(dir.slice(1));
     if (res) {
       setData(res.sort((a, b) => b.type.localeCompare(a.type)));
     }
@@ -174,10 +173,10 @@ const Files: React.FC<PropType> = (props) => {
     type: string,
     newName: string = '',
   ) => {
-    const oldPath = (dir ? dir + '/' : '') + name;
-    const newPath = (dir ? dir + '/' : '') + newName;
+    const oldPath = dir + name;
+    const newPath = dir + newName;
     if (type === 'folder') {
-      setDir(oldPath);
+      setDir(oldPath + '/');
     } else if (type === 'delete') {
       methods.delete([oldPath], getFileList);
     } else if (type === 'copy' || type === 'move') {
@@ -194,7 +193,7 @@ const Files: React.FC<PropType> = (props) => {
   };
 
   const batchChange = (type: string) => {
-    const newFiles = select.map((item) => (dir ? dir + '/' : '') + item);
+    const newFiles = select.map((item) => dir + item);
     if (type === 'delete') {
       methods.delete(newFiles, getFileList);
     } else if (type === 'move' || type === 'copy') {
@@ -214,23 +213,63 @@ const Files: React.FC<PropType> = (props) => {
   };
 
   const dragEvent = {
-    start: (e: React.DragEvent<HTMLDivElement>, value: string) => {},
-    over: (e: React.DragEvent<HTMLDivElement>, value: string) => {
-      setDragOver(value);
+    start: (e: React.DragEvent<HTMLDivElement>, value: string) => {
+      setDragStart(value);
     },
-    end: async (e: React.DragEvent<HTMLDivElement>, value: string) => {
-      if (dragOver) {
-        const oldPath = (dir ? dir + '/' : '') + value;
-        const newPath = (dir ? dir + '/' : '') + dragOver + '/' + value;
-        await methods.copyOrMove('move', [
-          {
-            oldPath,
-            newPath,
-          },
-        ]);
+    over: (
+      e: React.DragEvent<HTMLDivElement>,
+      value: string,
+      needDir: boolean = true,
+    ) => {
+      e.stopPropagation();
+      e.preventDefault();
+      const dirName = value ? dir + value : '';
+      setDragOver(needDir ? dirName : value);
+    },
+    drop: async (e: React.DragEvent<HTMLDivElement>, value: string) => {
+      e.stopPropagation();
+      e.preventDefault();
+      if (dragOver && dragStart) {
+        let optionArr = [];
+        if (select.includes(dragStart)) {
+          optionArr = select.map((item) => ({
+            oldPath: dir + item,
+            newPath: dragOver + item,
+          }));
+        } else {
+          const oldPath = dir + dragStart;
+          const newPath = dragOver + dragStart;
+          optionArr.push({ oldPath, newPath });
+        }
+
+        await methods.copyOrMove('move', optionArr);
         getFileList();
       }
+      setDragStart('');
       setDragOver('');
+    },
+    end: (e: React.DragEvent<HTMLDivElement>) => {
+      setDragOver('');
+    },
+    preventDefault: (e: React.DragEvent<HTMLDivElement>) => {
+      e.stopPropagation();
+      e.preventDefault();
+    },
+  };
+
+  const mouseEvent = {
+    move: (start: number, end: number) => {
+      const result = filterFile(data)
+        .filter((item, index) => {
+          const ele = {
+            start: index * 40,
+            end: (index + 1) * 40,
+          };
+
+          return ele.start < end && ele.end > start;
+        })
+        .map((item) => item.name);
+      setSelect(result);
     },
   };
 
@@ -286,7 +325,15 @@ const Files: React.FC<PropType> = (props) => {
       </div>
       <div className="content">
         <div className="tableInfo">
-          <BreadTabs dir={dir} setDir={setDir}></BreadTabs>
+          <BreadTabs
+            dir={dir}
+            dragOver={dragOver}
+            setDir={setDir}
+            onDragEndCallBack={dragEvent.end}
+            onDragOverCallBack={dragEvent.over}
+            onDragLeaveCallBack={dragEvent.end}
+            onDropCallBack={dragEvent.drop}
+          ></BreadTabs>
           <span>{intl.get('common.total', { total: data.length })}</span>
         </div>
 
@@ -309,67 +356,56 @@ const Files: React.FC<PropType> = (props) => {
               </div>
             </div>
 
-            <div className="tableBody">
-              <Checkbox.Group
-                value={select}
-                onChange={(value: CheckboxValueType[]) => setSelect(value)}
-              >
-                {filterFile(data).map((item) => (
-                  <div
-                    key={item.name}
-                    className={`list body ${
-                      item.type === 'folder' && dragOver === item.name
-                        ? 'dragover'
-                        : ''
-                    }`}
-                    onClick={(e) => singleClick(e, item.name)}
-                    draggable
-                    onDragStart={(e) => dragEvent.start(e, item.name)}
-                    onDragOver={(e) =>
-                      dragEvent.over(e, item.type === 'folder' ? item.name : '')
-                    }
-                    onDragEnd={(e) => dragEvent.end(e, item.name)}
-                  >
-                    <div className="check">
-                      <Checkbox value={item.name}></Checkbox>
+            <MouseArea select={mouseEvent.move}>
+              <DropdownArea disabled={!select.length} onChange={batchChange}>
+                <Checkbox.Group
+                  value={select}
+                  onChange={(value: CheckboxValueType[]) => setSelect(value)}
+                >
+                  {filterFile(data).map((item) => (
+                    <div
+                      key={item.name}
+                      className={`list body ${
+                        item.type === 'folder' &&
+                        dragOver === dir + item.name + '/'
+                          ? 'dragover'
+                          : ''
+                      } ${select.includes(item.name) && 'active'}`}
+                      onClick={(e) => singleClick(e, item.name)}
+                      draggable
+                      onDragStart={(e) => dragEvent.start(e, item.name)}
+                      onDragOver={(e) =>
+                        item.type === 'folder' &&
+                        item.name !== dragStart &&
+                        dragEvent.over(e, item.name + '/')
+                      }
+                      onDragEnd={dragEvent.end}
+                      onDragLeave={dragEvent.end}
+                      onDrop={(e) => dragEvent.drop(e, item.name)}
+                    >
+                      <div className="check">
+                        <Checkbox value={item.name}></Checkbox>
+                      </div>
+                      <div className="name">
+                        <Filename
+                          type={item.type}
+                          name={item.name}
+                          onChange={singleChange}
+                          add={item.add}
+                          disabled={!!select.length}
+                        ></Filename>
+                      </div>
+                      <div className="size">
+                        {sizeTransfer(item.type === 'folder' ? 0 : item.size)}
+                      </div>
+                      <div className="time">
+                        {moment(item.mtimeMs).format('YYYY-MM-DD HH:mm:ss')}
+                      </div>
                     </div>
-                    <div className="name">
-                      <Filename
-                        type={item.type}
-                        name={item.name}
-                        onChange={singleChange}
-                        add={item.add}
-                      ></Filename>
-                    </div>
-                    <div className="size">
-                      {sizeTransfer(item.type === 'folder' ? 0 : item.size)}
-                    </div>
-                    <div className="time">
-                      {moment(item.mtimeMs).format('YYYY-MM-DD HH:mm:ss')}
-                    </div>
-                  </div>
-                ))}
-              </Checkbox.Group>
-            </div>
-
-            {/* <Table
-            rowKey="name"
-            size="small"
-            dataSource={filterFile(data)}
-            columns={columns}
-            pagination={false}
-            loading={loading}
-            rowSelection={{
-              columnWidth: 68,
-              selectedRowKeys: select,
-              onChange: (value: string[]) => setSelect(value),
-            }}
-            onRow={record => {
-              return {
-                onClick: event => singleClick(record.name),
-              };
-            }}
-          ></Table> */}
+                  ))}
+                </Checkbox.Group>
+              </DropdownArea>
+            </MouseArea>
           </div>
         </Spin>
       </div>
