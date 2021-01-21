@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Setting } from './setting.entity';
@@ -7,12 +7,22 @@ import { v4 as uuidv4 } from 'uuid';
 import { Config } from '../../config';
 
 @Injectable()
-export class SettingService {
+export class SettingService implements OnModuleInit {
   constructor(
     @InjectRepository(Setting)
     private readonly settingRepository: Repository<Setting>,
     private readonly jwtService: JwtService,
-  ) {}
+  ) { }
+
+  async onModuleInit() {
+    const result = await this.find();
+    if (!result) {
+      await this.create({
+        username: Config.defaultUserName,
+        password: Config.defaultPassword,
+      });
+    }
+  }
 
   async validateUser(user: Partial<Setting>): Promise<undefined | Setting> {
     const result = await this.settingRepository.findOne(user);
