@@ -9,7 +9,7 @@ import { Upload } from '../upload/upload.entity';
     TypeOrmModule.forRoot({
       type: 'sqlite',
       database: './src/modules/basis/sqlite/db.sqlite',
-      entities: [Setting, History, Upload],
+      autoLoadEntities:true,
       synchronize: true,
     }),
   ],
